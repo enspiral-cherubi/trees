@@ -20,6 +20,8 @@ class Environment {
 
     var windowResize = new WindowResize(this.renderer, this.camera)
 
+    this._drawTree(5)
+
     this._addCubeToScene()
   }
 
@@ -29,6 +31,25 @@ class Environment {
   }
 
   // 'private'
+
+  _drawTree (n) {
+
+    //create sentences
+    var string = 'X'
+    var strings = [string]
+    for (var i = 0; i < n; i++){
+      //these rules encode the grammar
+      string = string.replace('X','F−[[X]+X]+F[+FX]−X)')
+      string = string.replace('F','FF')
+      strings.push(string)
+    }
+    console.log(strings)
+    //render tree
+    // var direction = new THREE.Vector3(1,1,1)
+    // for (i = 0; i < n; i++){
+    //
+    // }
+  }
 
   _addCubeToScene () {
     var geometry = new THREE.BoxGeometry(1, 1, 1)
