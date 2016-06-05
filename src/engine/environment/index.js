@@ -20,13 +20,13 @@ class Environment {
 
     var windowResize = new WindowResize(this.renderer, this.camera)
 
-    this._drawTree(5)
+    this._drawTree(6)
 
-    this._addCubeToScene()
+    // this._addCubeToScene()
   }
 
   render () {
-    this._updateCube()
+    // this._updateCube()
     this.renderer.render(this.scene, this.camera)
   }
 
@@ -39,16 +39,56 @@ class Environment {
     var strings = [string]
     for (var i = 0; i < n; i++){
       //these rules encode the grammar
-      string = string.replace('X','F−[[X]+X]+F[+FX]−X)')
-      string = string.replace('F','FF')
+      string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
+      string = string.replace(/F/g,'FF')
       strings.push(string)
     }
-    console.log(strings)
+    console.log(string)
     //render tree
-    // var direction = new THREE.Vector3(1,1,1)
-    // for (i = 0; i < n; i++){
-    //
-    // }
+    var position = new THREE.Vector3(0,0,0)
+    var direction = new THREE.Vector3(0.5,0.5,0)
+    var velocity = 0.5
+    var axis = new THREE.Vector3(0,0,1)
+    var savedPositions = []
+    var savedDirections = []
+    for (i = 0; i < string.length; i++){
+      var symbol = string.charAt(i)
+      if (symbol === 'F'){
+        //draw forward
+        var newPosition = new THREE.Vector3()
+        newPosition.copy(position)
+        newPosition.addScaledVector(direction,velocity)
+        var geometry = new THREE.Geometry()
+        geometry.vertices.push(position)
+        var newPosition = new THREE.Vector3()
+        newPosition.addVectors(position,direction)
+        geometry.vertices.push(newPosition)
+
+        var material = new THREE.LineBasicMaterial({color: 0})
+
+        var mesh = new THREE.Line(geometry,material)
+        this.scene.add(mesh)
+        position = newPosition
+      }
+      if (symbol === '-'){
+        //turn left
+        direction.applyAxisAngle(axis,-Math.PI/10)
+      }
+      if (symbol === '+'){
+        //turn right
+        direction.applyAxisAngle(axis,Math.PI/10)
+      }
+      if (symbol === '['){
+        //save position and angle
+        savedPositions.push(position)
+        savedDirections.push(direction)
+      }
+      if (symbol === ']'){
+        //recall position and angle
+        position = savedPositions.pop()
+        position = savedDirections.pop()
+      }
+    }
   }
 
   _addCubeToScene () {
