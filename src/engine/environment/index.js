@@ -46,11 +46,12 @@ class Environment {
     console.log(string)
     //render tree
     var position = new THREE.Vector3(0,0,0)
-    var direction = new THREE.Vector3(0.5,0.5,0)
+    var direction = new THREE.Vector3(0.1,0.1,0)
     var velocity = 0.5
     var axis = new THREE.Vector3(0,0,1)
     var savedPositions = []
     var savedDirections = []
+    var geometry = new THREE.Geometry()
     for (i = 0; i < string.length; i++){
       var symbol = string.charAt(i)
       if (symbol === 'F'){
@@ -58,16 +59,12 @@ class Environment {
         var newPosition = new THREE.Vector3()
         newPosition.copy(position)
         newPosition.addScaledVector(direction,velocity)
-        var geometry = new THREE.Geometry()
         geometry.vertices.push(position)
         var newPosition = new THREE.Vector3()
         newPosition.addVectors(position,direction)
         geometry.vertices.push(newPosition)
 
-        var material = new THREE.LineBasicMaterial({color: 0})
 
-        var mesh = new THREE.Line(geometry,material)
-        this.scene.add(mesh)
         position = newPosition
       }
       if (symbol === '-'){
@@ -93,6 +90,12 @@ class Environment {
         direction = savedDirections.pop()
       }
     }
+
+    var material = new THREE.LineBasicMaterial({color: 0})
+
+    var mesh = new THREE.Line(geometry,material)
+    this.scene.add(mesh)
+
   }
 
   _addCubeToScene () {
