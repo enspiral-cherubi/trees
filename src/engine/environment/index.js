@@ -20,7 +20,7 @@ class Environment {
 
     var windowResize = new WindowResize(this.renderer, this.camera)
 
-    this._drawTree(6)
+    this._drawTree(5)
 
     // this._addCubeToScene()
   }
@@ -91,8 +91,8 @@ class Environment {
       }
     }
 
+    // geometry.normalize()
     var material = new THREE.LineBasicMaterial({color: 0})
-
     var mesh = new THREE.Line(geometry,material)
     this.scene.add(mesh)
 
