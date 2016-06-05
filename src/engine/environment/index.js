@@ -20,13 +20,10 @@ class Environment {
 
     var windowResize = new WindowResize(this.renderer, this.camera)
 
-    this._drawTree(5)
-
-    // this._addCubeToScene()
+    this._drawTree(6)
   }
 
   render () {
-    // this._updateCube()
     this.renderer.render(this.scene, this.camera)
   }
 
@@ -49,6 +46,8 @@ class Environment {
     var direction = new THREE.Vector3(0.1,0.1,0)
     var velocity = 0.5
     var axis = new THREE.Vector3(0,0,1)
+    var axis2 = new THREE.Vector3(0,1,0)
+    var axis3 = new THREE.Vector3(1,0,0)
     var savedPositions = []
     var savedDirections = []
     var geometry = new THREE.Geometry()
@@ -69,11 +68,11 @@ class Environment {
       }
       if (symbol === '-'){
         //turn left
-        direction.applyAxisAngle(axis,-Math.PI/10)
+        direction.applyAxisAngle(axis,-Math.PI/5)
       }
       if (symbol === '+'){
         //turn right
-        direction.applyAxisAngle(axis,Math.PI/10)
+        direction.applyAxisAngle(axis,Math.PI/5)
       }
       if (symbol === '['){
         //save position and angle
@@ -88,6 +87,8 @@ class Environment {
         //recall position and angle
         position = savedPositions.pop()
         direction = savedDirections.pop()
+        axis.applyAxisAngle(axis2,Math.PI/10)
+        axis.applyAxisAngle(axis3,Math.PI/10)
       }
     }
 
@@ -98,17 +99,6 @@ class Environment {
 
   }
 
-  _addCubeToScene () {
-    var geometry = new THREE.BoxGeometry(1, 1, 1)
-  	var material = new THREE.MeshBasicMaterial({ color: 0x00ff00 })
-  	this.cube = new THREE.Mesh(geometry, material)
-  	this.scene.add(this.cube)
-  }
-
-  _updateCube () {
-    this.cube.rotation.x += 0.1
-		this.cube.rotation.y += 0.1
-  }
 
 }
 
