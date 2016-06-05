@@ -80,13 +80,17 @@ class Environment {
       }
       if (symbol === '['){
         //save position and angle
-        savedPositions.push(position)
-        savedDirections.push(direction)
+        var savedPosition = new THREE.Vector3()
+        savedPosition.copy(position)
+        savedPositions.push(savedPosition)
+        var savedDirection = new THREE.Vector3()
+        savedDirection.copy(direction)
+        savedDirections.push(savedDirection)
       }
       if (symbol === ']'){
         //recall position and angle
         position = savedPositions.pop()
-        position = savedDirections.pop()
+        direction = savedDirections.pop()
       }
     }
   }
