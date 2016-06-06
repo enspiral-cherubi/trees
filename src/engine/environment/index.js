@@ -3,6 +3,8 @@ import $ from 'jquery'
 import ThreeOrbitControls from 'three-orbit-controls'
 var OrbitControls = ThreeOrbitControls(THREE)
 import WindowResize from 'three-window-resize'
+var Color = require("color")
+
 
 class Environment {
 
@@ -19,8 +21,12 @@ class Environment {
     this.renderer.setClearColor(0xffffff, 1)
 
     var windowResize = new WindowResize(this.renderer, this.camera)
-
-    this._drawTree(6)
+    //
+    // var firstTreePosition = new THREE.Vector3(0,0,0)
+    // var secondTreePosition = new THREE.Vector3(4,4,0)
+    // this._drawTree(6,firstTreePosition)
+    // this._drawTree(6,secondTreePosition)
+    this._drawTree(5)
   }
 
   render () {
@@ -36,7 +42,9 @@ class Environment {
     var strings = [string]
     for (var i = 0; i < n; i++){
       //these rules encode the grammar
-      string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
+      // string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
+      // string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X-[X+]]]-X)') //nice with 3d hack
+      string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X--[X-X]]]-X)') //nice with 3d hack
       string = string.replace(/F/g,'FF')
       strings.push(string)
     }
@@ -54,15 +62,30 @@ class Environment {
     for (i = 0; i < string.length; i++){
       var symbol = string.charAt(i)
       if (symbol === 'F'){
+        var numFs = 1
+        // var j = i+1
+        // for (j = i+1; j < string.length; j++){
+        //   if (string.charAt(j) === 'F'){
+        //     numFs += 1
+        //   } else {
+        //     break
+        //   }
+        // i = j-1
+        // }
+
         //draw forward
         var newPosition = new THREE.Vector3()
         newPosition.copy(position)
-        newPosition.addScaledVector(direction,velocity)
-        geometry.vertices.push(position)
-        var newPosition = new THREE.Vector3()
-        newPosition.addVectors(position,direction)
-        geometry.vertices.push(newPosition)
+        newPosition.addScaledVector(direction,velocity*numFs)
 
+        var segment = new THREE.LineCurve(position,newPosition)
+        var segmentGeometry = new THREE.TubeGeometry(segment,
+          2, //segments
+          0.1, //radius
+          5, //radius segments
+          false //closed
+        )
+        geometry.merge(segmentGeometry)
 
         position = newPosition
       }
@@ -92,11 +115,23 @@ class Environment {
       }
     }
 
-    // geometry.normalize()
-    var material = new THREE.LineBasicMaterial({color: 0})
-    var mesh = new THREE.Line(geometry,material)
-    this.scene.add(mesh)
+    //add color
+    var numFaces = geometry.faces.length
+    for (var i = 0; i < numFaces; i++){
+      // var hue = parseInt(i/numFaces)
+      var hue = i/numFaces
+      var saturation = 1
+      var color = new THREE.Color()
+      color.setHSL(hue,saturation,0.5)
+      geometry.faces[i].color = color
+    }
+    geometry.colorsNeedUpdate = true
 
+    // geometry.normalize()
+    var material = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
+    var mesh = new THREE.Mesh(geometry,material)
+    this.scene.add(mesh)
+    // console.log(colors)
   }
 
 
