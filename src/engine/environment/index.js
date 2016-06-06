@@ -62,14 +62,25 @@ class Environment {
     for (i = 0; i < string.length; i++){
       var symbol = string.charAt(i)
       if (symbol === 'F'){
+        var numFs = 1
+        // var j = i+1
+        // for (j = i+1; j < string.length; j++){
+        //   if (string.charAt(j) === 'F'){
+        //     numFs += 1
+        //   } else {
+        //     break
+        //   }
+        // i = j-1
+        // }
+
         //draw forward
         var newPosition = new THREE.Vector3()
         newPosition.copy(position)
-        newPosition.addScaledVector(direction,velocity)
+        newPosition.addScaledVector(direction,velocity*numFs)
 
         var segment = new THREE.LineCurve(position,newPosition)
         var segmentGeometry = new THREE.TubeGeometry(segment,
-          1, //segments
+          2, //segments
           0.1, //radius
           5, //radius segments
           false //closed
@@ -77,13 +88,6 @@ class Environment {
         geometry.merge(segmentGeometry)
 
 
-        geometry.vertices.push(position)
-        var newPosition = new THREE.Vector3()
-        newPosition.addVectors(position,direction)
-
-
-
-        geometry.vertices.push(newPosition)
 
 
         position = newPosition
