@@ -87,9 +87,6 @@ class Environment {
         )
         geometry.merge(segmentGeometry)
 
-
-
-
         position = newPosition
       }
       if (symbol === '-'){
@@ -119,19 +116,19 @@ class Environment {
     }
 
     //add color
-    // var numVertices = geometry.vertices.length
-    // var colors = []
-    // for (var i = 0; i < numVertices; i++){
-    //   var hue = parseInt(100*i/numVertices)
-    //   var saturation = 100
-    //   var hsv = Color().hsv(hue, saturation, 100)
-    //   colors.push(hsv.hexString())
-    // }
-    // colors.map(parseInt)
-    // geometry.colors = colors
-    // geometry.colorsNeedUpdate = true
+    var numFaces = geometry.faces.length
+    for (var i = 0; i < numFaces; i++){
+      // var hue = parseInt(i/numFaces)
+      var hue = i/numFaces
+      var saturation = 1
+      var color = new THREE.Color()
+      color.setHSL(hue,saturation,0.5)
+      geometry.faces[i].color = color
+    }
+    geometry.colorsNeedUpdate = true
+
     // geometry.normalize()
-    var material = new THREE.MeshNormalMaterial()
+    var material = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
     var mesh = new THREE.Mesh(geometry,material)
     this.scene.add(mesh)
     // console.log(colors)
