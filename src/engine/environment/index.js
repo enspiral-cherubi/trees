@@ -3,6 +3,8 @@ import $ from 'jquery'
 import ThreeOrbitControls from 'three-orbit-controls'
 var OrbitControls = ThreeOrbitControls(THREE)
 import WindowResize from 'three-window-resize'
+var Color = require("color")
+
 
 class Environment {
 
@@ -19,8 +21,12 @@ class Environment {
     this.renderer.setClearColor(0xffffff, 1)
 
     var windowResize = new WindowResize(this.renderer, this.camera)
-
-    this._drawTree(6)
+    //
+    // var firstTreePosition = new THREE.Vector3(0,0,0)
+    // var secondTreePosition = new THREE.Vector3(4,4,0)
+    // this._drawTree(6,firstTreePosition)
+    // this._drawTree(6,secondTreePosition)
+    this._drawTree(5)
   }
 
   render () {
@@ -36,7 +42,9 @@ class Environment {
     var strings = [string]
     for (var i = 0; i < n; i++){
       //these rules encode the grammar
-      string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
+      // string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
+      // string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X-[X+]]]-X)') //nice with 3d hack
+      string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X--[X-X]]]-X)') //nice with 3d hack
       string = string.replace(/F/g,'FF')
       strings.push(string)
     }
@@ -58,9 +66,23 @@ class Environment {
         var newPosition = new THREE.Vector3()
         newPosition.copy(position)
         newPosition.addScaledVector(direction,velocity)
+
+        var segment = new THREE.LineCurve(position,newPosition)
+        var segmentGeometry = new THREE.TubeGeometry(segment,
+          1, //segments
+          0.1, //radius
+          5, //radius segments
+          false //closed
+        )
+        geometry.merge(segmentGeometry)
+
+
         geometry.vertices.push(position)
         var newPosition = new THREE.Vector3()
         newPosition.addVectors(position,direction)
+
+
+
         geometry.vertices.push(newPosition)
 
 
@@ -92,11 +114,23 @@ class Environment {
       }
     }
 
+    //add color
+    // var numVertices = geometry.vertices.length
+    // var colors = []
+    // for (var i = 0; i < numVertices; i++){
+    //   var hue = parseInt(100*i/numVertices)
+    //   var saturation = 100
+    //   var hsv = Color().hsv(hue, saturation, 100)
+    //   colors.push(hsv.hexString())
+    // }
+    // colors.map(parseInt)
+    // geometry.colors = colors
+    // geometry.colorsNeedUpdate = true
     // geometry.normalize()
-    var material = new THREE.LineBasicMaterial({color: 0})
-    var mesh = new THREE.Line(geometry,material)
+    var material = new THREE.MeshNormalMaterial()
+    var mesh = new THREE.Mesh(geometry,material)
     this.scene.add(mesh)
-
+    // console.log(colors)
   }
 
 
