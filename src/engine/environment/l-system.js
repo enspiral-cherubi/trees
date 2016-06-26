@@ -1,24 +1,53 @@
 import THREE from 'three'
 
+
 class LSystem {
-  constructor (n,rule,p,angle,wobble) {
-    this.string = this.generateString(n,rule,p)
+  constructor (n,rule,angle,wobble) {
+    if (rule === 'random') {
+      this.rule = this.generateRule()
+    } else {
+      this.rule = rule
+    }
+    this.string = this.generateString(n,this.rule)
     this.geometry = this.generateGeometry(angle,wobble)
   }
 
-  generateString (n,rule,p) {
+  generateRule () {
+    var rule = ''
+    var numLeftBrackets = 0
+    for(var j = 0; j<20; j++){
+      var r = Math.random()
+      if (r<0.2){
+        rule += '['
+        numLeftBrackets += 1
+      } else if (r<0.4) {
+        rule += 'X'
+      } else if (r<0.6) {
+        rule += 'F'
+      } else if (r<0.7) {
+        rule += '+'
+      } else if (r<0.8) {
+        rule += '-'
+      } else if (numLeftBrackets>0) {
+        rule += ']'
+        numLeftBrackets -= 1
+      }
+    }
+    while(numLeftBrackets > 0){
+      rule += ']'
+      numLeftBrackets -= 1
+    }
+    return rule
+  }
+
+  generateString (n,rule) {
     var string = 'X'
     for (var i = 0; i < n; i++){
       //these rules encode the grammar
       // string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
       // string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X-[X+]]]-X)') //nice with 3d hack
       string = string.replace(/X/g,rule) //nice with 3d hack
-      var r = Math.random()
-      if (r>p){
-        string = string.replace(/F/g,'FF')
-      } else {
-        string = string.replace(/F/g,'F+F')
-      }
+      string = string.replace(/F/g,'FF')
     }
     return string
   }
