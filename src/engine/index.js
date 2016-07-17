@@ -16,8 +16,11 @@ class Engine {
   }
 
   start () {
-    loop((t) => {
+    loop((dt) => {
       this.environment.render()
+      if (this.environment.controls) {
+        this.environment.controls.update(dt)
+      }
     }).start()
   }
 
