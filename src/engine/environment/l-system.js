@@ -31,7 +31,7 @@ class LSystem {
       } else if (r<0.8) {
         rule += '-'
       } else if (numLeftBrackets>0) {
-        rule += ']'
+        rule += 'X]'
         numLeftBrackets -= 1
       }
     }
