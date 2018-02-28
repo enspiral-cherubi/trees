@@ -15,7 +15,7 @@ class LSystem {
   }
 
   generateRule () {
-    var rule = ''
+    var rule = 'FFF'
     var numLeftBrackets = 0
     for(var j = 0; j<20; j++){
       var r = Math.random()
@@ -74,7 +74,7 @@ class LSystem {
 
   generateGeometry(angle,wobble) {
     var position = new THREE.Vector3(0,0,0)
-    var direction = new THREE.Vector3(0.1,0.1,0)
+    var direction = new THREE.Vector3(0,0.1,0)
     var velocity = 0.5
     var axis = new THREE.Vector3(0,0,1)
     var axis2 = new THREE.Vector3(0,1,0)

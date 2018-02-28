@@ -16,10 +16,12 @@ class Environment {
     this.scene = new THREE.Scene()
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000)
-    this.camera.position.z = 5
+    this.camera.position.z = 30
+    this.camera.position.y = 20
+
 
     // var hemiLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 );
-// 
+//
 
     // this.controls = new OrbitControls(this.camera)
 
@@ -45,7 +47,6 @@ class Environment {
   }
 
   render () {
-
 
     this.renderer.render(this.scene, this.camera)
     this.trees.forEach((treeRow) => {
