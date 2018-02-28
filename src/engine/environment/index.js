@@ -18,6 +18,9 @@ class Environment {
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000)
     this.camera.position.z = 5
 
+    // var hemiLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 );
+// 
+
     // this.controls = new OrbitControls(this.camera)
 
     this.renderer = new THREE.WebGLRenderer({alpha: true, canvas: $('#three-canvas')[0]})
@@ -106,10 +109,10 @@ class Environment {
   }
 
   drawTree (n) {
-    return new LSystem(n,'F-[[X]+X]+F[+F[F+X-[X+]]]-X',Math.PI/5,Math.PI/5)
+    // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-[X+]]]-X',Math.PI/5,Math.PI/5)
     // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-]-]',Math.PI/5,Math.PI/5)
     // return new LSystem(n,'F-[[X]+X]-F[+[X+FX-]-]',Math.PI/5,Math.PI/5) // good idea to balance # of +s with -s
-    // return new LSystem(n,'random',Math.PI/5,Math.PI/5)
+    return new LSystem(n,'random',Math.PI/5,Math.PI/5)
   }
 
 

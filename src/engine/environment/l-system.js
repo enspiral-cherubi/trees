@@ -20,7 +20,7 @@ class LSystem {
     for(var j = 0; j<20; j++){
       var r = Math.random()
       if (r<0.2){
-        rule += '['
+        rule += '[F'
         numLeftBrackets += 1
       } else if (r<0.4) {
         rule += 'X'
@@ -39,6 +39,7 @@ class LSystem {
       rule += ']'
       numLeftBrackets -= 1
     }
+    console.log(rule)
     return rule
   }
 
@@ -58,7 +59,7 @@ class LSystem {
     generateLeafGeometry() {
       //r(theta) = (1+ b*sin(theta))*(1+a*cos(n*theta)) smoke weed every day
       var resolution = 32
-      var r = Math.random()*0.4
+      var r = Math.random()*0.4 + 0.1
       var a = Math.random()
       var b = 0.5+Math.random()/2
       var n = Math.floor(Math.random()*10)
