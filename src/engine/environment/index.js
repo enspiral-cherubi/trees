@@ -6,6 +6,7 @@ var OrbitControls = ThreeOrbitControls(THREE)
 var FlyControls = ThreeFlyControls(THREE)
 import WindowResize from 'three-window-resize'
 import LSystem from './l-system.js'
+import Leaf from './leaf.js'
 var Color = require("color")
 
 
@@ -33,16 +34,29 @@ class Environment {
     // var secondTreePosition = new THREE.Vector3(4,4,0)
     // this._drawTree(6,firstTreePosition)
     // this._drawTree(6,secondTreePosition)
-
-    this.trees = this.drawForest(5,5)
+    // var leaf = new Leaf()
+    // this.scene.add(leaf.mesh)
+    this.trees = this.drawForest(5,1)
     // this.separateTrees(4)
+    this.rustle = 0
   }
 
   render () {
 
 
     this.renderer.render(this.scene, this.camera)
-
+    this.trees.forEach((treeRow) => {
+      treeRow.forEach((tree) => {
+        tree.leafGeometry.vertices.forEach((vertex) => {
+          vertex.add(new THREE.Vector3(
+            (0.5-Math.random())*this.rustle,
+            (0.5-Math.random())*this.rustle,
+            (0.5-Math.random())*this.rustle
+          ))
+        })
+        tree.leafGeometry.verticesNeedUpdate = true
+      })
+    })
   }
 
   // 'private'
@@ -75,10 +89,15 @@ class Environment {
       trees.push([])
       for(var j =-N/2; j<N/2; j++){
         var newTree = this.drawTree(n,0.1)
-        newTree.geometry.translate(5*i,-5*i,5*j)
-        var material = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
-        var mesh = new THREE.Mesh(newTree.geometry,material)
-        this.scene.add(mesh)
+        newTree.skeletonGeometry.translate(5*i,-5*i,5*j)
+        newTree.leafGeometry.translate(5*i,-5*i,5*j)
+        // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
+        var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b})
+        var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
+        this.scene.add(skeletonMesh)
+        var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
+        var leafMesh = new THREE.Mesh(newTree.leafGeometry,leafMaterial)
+        this.scene.add(leafMesh)
         trees[i+N/2].push(newTree)
       }
     }
@@ -87,10 +106,10 @@ class Environment {
   }
 
   drawTree (n) {
-    // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-[X+]]]-X',Math.PI/5,Math.PI/5)
+    return new LSystem(n,'F-[[X]+X]+F[+F[F+X-[X+]]]-X',Math.PI/5,Math.PI/5)
     // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-]-]',Math.PI/5,Math.PI/5)
     // return new LSystem(n,'F-[[X]+X]-F[+[X+FX-]-]',Math.PI/5,Math.PI/5) // good idea to balance # of +s with -s
-    return new LSystem(n,'random',Math.PI/5,Math.PI/5)
+    // return new LSystem(n,'random',Math.PI/5,Math.PI/5)
   }
 
 
