@@ -54,7 +54,7 @@ class Environment {
     this.trees.forEach((treeRow) => {
       treeRow.forEach((tree) => {
         tree.leaves.forEach((leaf) => {
-          var angle = this.rustle
+          var angle = this.rustle*(Math.random()-0.5)
           leaf.vertices.forEach((v) => {
             v.sub(leaf.origin)
             v.applyAxisAngle(leaf.axis,angle)

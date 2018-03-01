@@ -16,9 +16,9 @@ class LSystem {
   }
 
   generateRule () {
-    var rule = 'FFF'
-    var numLeftBrackets = 0
-    var numX = 0
+    var rule = 'FFF[X'
+    var numLeftBrackets = 1
+    var numX = 2
     var numSymbols = 0
     while(true){
       var r = Math.random()
@@ -26,7 +26,7 @@ class LSystem {
         rule += '[F'
         numLeftBrackets += 1
         numX +=1
-      } else if (r<0.4 && numX<6) {
+      } else if (r<0.4 && numX<5) {
         rule += 'X'
         numX += 1
       } else if (r<0.55) {
