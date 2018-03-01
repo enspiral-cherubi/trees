@@ -43,22 +43,32 @@ class Environment {
     // this.scene.add(leaf.mesh)
     this.trees = this.drawForest(5,1)
     // this.separateTrees(4)
-    this.rustle = 0
+    this.rustle = 0.1
   }
 
   render () {
 
     this.renderer.render(this.scene, this.camera)
+
+    //rustle
     this.trees.forEach((treeRow) => {
       treeRow.forEach((tree) => {
-        tree.leafGeometry.vertices.forEach((vertex) => {
-          vertex.add(new THREE.Vector3(
-            (0.5-Math.random())*this.rustle,
-            (0.5-Math.random())*this.rustle,
-            (0.5-Math.random())*this.rustle
-          ))
+        tree.leaves.forEach((leaf) => {
+          var angle = this.rustle
+          leaf.vertices.forEach((v) => {
+            v.sub(leaf.origin)
+            v.applyAxisAngle(leaf.axis,angle)
+            v.add(leaf.origin)
+          })
+          // leaf.vertices.forEach((v) => {
+          //   v.add(new THREE.Vector3(
+          //     this.rustle*(Math.random()-0.5),
+          //     this.rustle*(Math.random()-0.5),
+          //     this.rustle*(Math.random()-0.5)
+          //   ))
+          // })
+          leaf.verticesNeedUpdate = true
         })
-        tree.leafGeometry.verticesNeedUpdate = true
       })
     })
   }
@@ -93,17 +103,18 @@ class Environment {
       trees.push([])
       for(var j =-N/2; j<N/2; j++){
         var newTree = this.drawTree(n,0.1)
-        newTree.skeletonGeometry.translate(5*i,-5*i,5*j)
-        newTree.leafGeometry.translate(5*i,-5*i,5*j)
+        // newTree.skeletonGeometry.translate(5*i,-5*i,5*j)
+        // newTree.leafGeometry.translate(5*i,-5*i,5*j)
         // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
         var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b})
         var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
         this.scene.add(skeletonMesh)
         var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
-        // newTree.leaves.forEach((leaf) => {
-        //   this.scene.add(new THREE.Mesh(leaf.geometry,leafMaterial))
-        // })
-        this.scene.add(new THREE.Mesh(newTree.leafGeometry,leafMaterial))
+        newTree.leaves.forEach((leaf) => {
+          // leaf.translate(5*i,-5*i,5*j)
+          this.scene.add(new THREE.Mesh(leaf,leafMaterial))
+        })
+        // this.scene.add(new THREE.Mesh(newTree.leafGeometry,leafMaterial))
         trees[i+N/2].push(newTree)
       }
     }
@@ -113,6 +124,7 @@ class Environment {
 
   drawTree (n) {
     // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-[X+]]]-X',Math.PI/5,Math.PI/5)
+    // FFF[FXL]+[F[FF+-FXL]XXL]FX[F[F[FFF[FXL]]]]
     // FFF[FFX+F[F[F-X]FFX]XF-XF[F+X]]
     // FFF[FF+XL]-[FF+-XL]FFXF[F[FXL]X+]
     // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-]-]',Math.PI/5,Math.PI/5)

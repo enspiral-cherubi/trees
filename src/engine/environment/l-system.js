@@ -92,7 +92,7 @@ class LSystem {
     var savedDirections = []
     var level = 1
     var skeletonGeometry = new THREE.Geometry()
-    var leafGeometry = new THREE.Geometry()
+    // var leafGeometry = new THREE.Geometry()
 
     var symbol = ''
     for (i = 0; i < this.string.length; i++){
@@ -105,7 +105,6 @@ class LSystem {
           i++
           symbol = this.string.charAt(i+1)
         }
-
         //draw forward
         var newPosition = new THREE.Vector3()
         newPosition.copy(position)
@@ -119,13 +118,14 @@ class LSystem {
           false //closed
         )
         skeletonGeometry.merge(segmentGeometry)
-
         position = newPosition
       }
       else if (symbol === 'L'){
-        var leaf = new Leaf(position,direction,this.prototypeLeafGeometry)
-        leafGeometry.merge(leaf.geometry)
-        // this.leaves.push(new Leaf(position,direction,this.prototypeLeafGeometry))
+        if (Math.random()>2/level){
+          var leaf = new Leaf(position,direction,this.prototypeLeafGeometry)
+          // leafGeometry.merge(leaf.geometry)
+          this.leaves.push(leaf.geometry)
+        }
       }
       else if (symbol === '-'){
         //turn left
@@ -168,7 +168,7 @@ class LSystem {
     }
     skeletonGeometry.colorsNeedUpdate = true
     this.skeletonGeometry = skeletonGeometry
-    this.leafGeometry = leafGeometry
+    // this.leafGeometry = leafGeometry
   }
 }
 
