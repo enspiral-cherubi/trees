@@ -100,8 +100,10 @@ class Environment {
         var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
         this.scene.add(skeletonMesh)
         var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
-        var leafMesh = new THREE.Mesh(newTree.leafGeometry,leafMaterial)
-        this.scene.add(leafMesh)
+        // newTree.leaves.forEach((leaf) => {
+        //   this.scene.add(new THREE.Mesh(leaf.geometry,leafMaterial))
+        // })
+        this.scene.add(new THREE.Mesh(newTree.leafGeometry,leafMaterial))
         trees[i+N/2].push(newTree)
       }
     }
@@ -111,6 +113,8 @@ class Environment {
 
   drawTree (n) {
     // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-[X+]]]-X',Math.PI/5,Math.PI/5)
+    // FFF[FFX+F[F[F-X]FFX]XF-XF[F+X]]
+    // FFF[FF+XL]-[FF+-XL]FFXF[F[FXL]X+]
     // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-]-]',Math.PI/5,Math.PI/5)
     // return new LSystem(n,'F-[[X]+X]-F[+[X+FX-]-]',Math.PI/5,Math.PI/5) // good idea to balance # of +s with -s
     return new LSystem(n,'random',Math.PI/5,Math.PI/5)
