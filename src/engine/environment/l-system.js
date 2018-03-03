@@ -26,15 +26,15 @@ class LSystem {
         rule += '[F'
         numLeftBrackets += 1
         numX +=1
-      } else if (r<0.4 && numX<5) {
+      } else if (r<0.3 && numX<5) {
         rule += 'X'
         numX += 1
-      } else if (r<0.55) {
+      } else if (r<0.50) {
         rule += 'F'
       } else if (r<0.65) {
-        rule += '+'
-      } else if (r<0.75) {
-        rule += '-'
+        rule += '+F'
+      } else if (r<0.8) {
+        rule += '-F'
       } else if (numLeftBrackets>0) {
         rule += 'XL]'
         numLeftBrackets -= 1
@@ -45,7 +45,7 @@ class LSystem {
       numSymbols +=1
     }
     while(numLeftBrackets > 0){
-      rule += ']'
+      rule += '+FL]'
       numLeftBrackets -= 1
     }
     console.log(rule)
@@ -112,7 +112,7 @@ class LSystem {
 
         var segment = new THREE.LineCurve(position,newPosition)
         var segmentGeometry = new THREE.TubeGeometry(segment,
-          2, //segments
+          1, //segments
           0.2/level, //radius
           5, //radius segments
           false //closed

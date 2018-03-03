@@ -129,6 +129,7 @@ class Environment {
     // FFF[FF+XL]-[FF+-XL]FFXF[F[FXL]X+]
     // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-]-]',Math.PI/5,Math.PI/5)
     // return new LSystem(n,'F-[[X]+X]-F[+[X+FX-]-]',Math.PI/5,Math.PI/5) // good idea to balance # of +s with -s
+    // FFF[X-F-FXL][F+FXL]XFFFX-FFFF-F[F+F[F[F[FXL]+FL]+FL]+FL]
     return new LSystem(n,'random',Math.PI/5,Math.PI/5)
   }
 
