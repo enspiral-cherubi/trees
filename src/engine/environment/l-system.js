@@ -37,6 +37,11 @@ class LSystem {
         rule += '-F'
       } else if (numLeftBrackets>0) {
         rule += 'XL]'
+        if(r<0.9){
+          rule += '+'
+        } else {
+          rule += '-'
+        }
         numLeftBrackets -= 1
         if (numSymbols>20){
           break

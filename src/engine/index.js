@@ -13,6 +13,7 @@ class Engine {
 
   bindEventListeners () {
     $(window).load(this.view.closeLoadingScreen)
+    $(window).keydown((e)=>{this.environment.control(e)})
   }
 
   start () {
