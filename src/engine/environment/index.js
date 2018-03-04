@@ -30,6 +30,7 @@ class Environment {
     this.controls = new THREE.FlyControls(this.camera, this.renderer.domElement)
     this.controls.movementSpeed = 0.2
     this.controls.rollSpeed = 0.01
+    this.keyMap = {}
 
     var windowResize = new WindowResize(this.renderer, this.camera)
 
@@ -38,9 +39,9 @@ class Environment {
     // this.separateTrees(4)
     this.rustle = 0.1
     this.velocity = new THREE.Vector3(0,0,0)
-    this.flying = false
     this.glideRatio = 2
     this.cameraDirection = this.camera.getWorldDirection()
+    this.flying = false
 
     this.planetRadius = 10
     var planetGeometry = new THREE.SphereGeometry(this.planetRadius,32,32)
@@ -73,27 +74,31 @@ class Environment {
 
       if (climbing){
         this.velocity.set(0,0,0)
+        this.controls.movementSpeed = 0.05
       } else {
         //gravity
         this.velocity.addScaledVector(this.camera.position,-50/Math.pow(this.camera.position.length(),3))
         //drag
         this.velocity.addScaledVector(this.velocity,-0.05)
         if(this.camera.position.length() > this.planetRadius*1.1){
-          if(this.flying){
+          if(this.keyMap['w']){
             //gliding
             this.camera.position.addScaledVector(this.velocity,0.1/this.glideRatio)
             this.camera.position.addScaledVector(
               this.cameraDirection,
-              -0.1*this.velocity.dot(this.camera.position)/this.camera.position.length()
+              0.1*Math.abs(this.velocity.dot(this.camera.position)/this.camera.position.length())
             )
+            this.controls.movementSpeed = 0
           } else {
             //moving
             this.camera.position.addScaledVector(this.velocity,0.1)
+            this.controls.movementSpeed = 0.2*this.planetRadius/Math.pow(this.camera.position.length(),2)
           }
         } else {
           //sitting
           this.camera.position.multiplyScalar(1.1*this.planetRadius/this.camera.position.length())
           this.velocity.set(0,0,0)
+          this.controls.movementSpeed = 0.2
         }
       }
 
@@ -102,10 +107,18 @@ class Environment {
   }
 
 
+  mapKeys (e) {
+    this.keyMap[e.key] = (e.type == 'keydown');
+  }
+
   control (e) {
     if(e.key===' ' && squirrel){
       this.velocity.addScaledVector(this.camera.position,1/this.camera.position.length())
-      this.camera.position.multiplyScalar(1.1)
+      this.camera.position.addScaledVector(this.camera.position,2/this.camera.position.length())
+      if(this.keyMap['w']){
+        this.velocity.addScaledVector(this.cameraDirection,3)
+        this.camera.position.addScaledVector(this.cameraDirection,1)
+      }
     }
     if(e.key==='w'){
       this.flying = true
