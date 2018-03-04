@@ -51,6 +51,9 @@ class Environment {
     this.rustle = 0.1
     this.gravity = new THREE.Vector3(0,1,0)
     this.velocity = new THREE.Vector3(0,0,0)
+    this.flying = false
+    this.glideRatio = 2
+    this.cameraDirection = this.camera.getWorldDirection()
 
     var geometry = new THREE.PlaneGeometry(1000,1000)
     geometry.lookAt(this.gravity)
@@ -62,7 +65,7 @@ class Environment {
   render () {
 
     this.renderer.render(this.scene, this.camera)
-
+    this.camera.getWorldDirection(this.cameraDirection)
     if(squirrel){
       var climbing = false
       this.trees.forEach((treeRow) => {
@@ -80,8 +83,14 @@ class Environment {
         this.velocity.set(0,0,0)
       } else {
         this.velocity.addScaledVector(this.gravity,-0.3)
+        this.velocity.addScaledVector(this.velocity,-0.05)
         if(this.camera.position.y >0.5){
-          this.camera.position.addScaledVector(this.velocity,0.1)
+          if(this.flying){
+            this.camera.position.addScaledVector(this.velocity,0.1/this.glideRatio)
+            this.camera.position.addScaledVector(this.cameraDirection,-0.1*this.velocity.y)
+          } else {
+            this.camera.position.addScaledVector(this.velocity,0.1)
+          }
         } else {
           this.camera.position.y = 0.5
           this.velocity.set(0,0,0)
@@ -123,6 +132,11 @@ class Environment {
     if(e.key===' ' && squirrel){
       this.velocity.addScaledVector(this.gravity,10)
       this.camera.position.y += 0.5
+    }
+    if(e.key==='w'){
+      this.flying = true
+    } else {
+      this.flying = false
     }
     // if(e.key==='g'){
     //   console.log(this.camera.rotation)
