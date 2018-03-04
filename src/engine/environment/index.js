@@ -8,7 +8,7 @@ import WindowResize from 'three-window-resize'
 import LSystem from './l-system.js'
 import Leaf from './leaf.js'
 var Color = require("color")
-var squirrel = false
+var squirrel = true
 
 
 class Environment {
@@ -37,7 +37,6 @@ class Environment {
 
     // this.separateTrees(4)
     this.rustle = 0.1
-    this.gravity = new THREE.Vector3(0,1,0)
     this.velocity = new THREE.Vector3(0,0,0)
     this.flying = false
     this.glideRatio = 2
@@ -52,7 +51,7 @@ class Environment {
     this.camera.position.z = 30
     this.camera.position.y = this.planetRadius
 
-    this.trees = this.drawForest(4,2)
+    this.trees = this.drawForest(4,3)
 
   }
 
@@ -76,17 +75,25 @@ class Environment {
       if (climbing){
         this.velocity.set(0,0,0)
       } else {
-        this.velocity.addScaledVector(this.gravity,-0.3)
+        //gravity
+        this.velocity.addScaledVector(this.camera.position,-50/Math.pow(this.camera.position.length(),3))
+        //drag
         this.velocity.addScaledVector(this.velocity,-0.05)
-        if(this.camera.position.y >0.5){
+        if(this.camera.position.length() > this.planetRadius*1.1){
           if(this.flying){
+            //gliding
             this.camera.position.addScaledVector(this.velocity,0.1/this.glideRatio)
-            this.camera.position.addScaledVector(this.cameraDirection,-0.1*this.velocity.y)
+            this.camera.position.addScaledVector(
+              this.cameraDirection,
+              -0.1*this.velocity.dot(this.camera.position)/this.camera.position.length()
+            )
           } else {
+            //moving
             this.camera.position.addScaledVector(this.velocity,0.1)
           }
         } else {
-          this.camera.position.y = 0.5
+          //sitting
+          this.camera.position.multiplyScalar(1.1*this.planetRadius/this.camera.position.length())
           this.velocity.set(0,0,0)
         }
       }
@@ -98,8 +105,8 @@ class Environment {
 
   control (e) {
     if(e.key===' ' && squirrel){
-      this.velocity.addScaledVector(this.gravity,10)
-      this.camera.position.y += 0.5
+      this.velocity.addScaledVector(this.camera.position,1/this.camera.position.length())
+      this.camera.position.multiplyScalar(1.1)
     }
     if(e.key==='w'){
       this.flying = true
