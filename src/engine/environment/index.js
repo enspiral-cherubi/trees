@@ -8,7 +8,7 @@ import WindowResize from 'three-window-resize'
 import LSystem from './l-system.js'
 import Leaf from './leaf.js'
 var Color = require("color")
-var squirrel = true
+var squirrel = false
 
 
 class Environment {
@@ -17,15 +17,12 @@ class Environment {
     this.scene = new THREE.Scene()
 
     this.camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.01, 1000)
-    this.camera.position.z = 30
-    this.camera.position.y = 20
 
-
+    //TODO: Make the SUN
     // var hemiLight = new THREE.HemisphereLight( 0x0000ff, 0x00ff00, 0.6 );
-//
+    //TODO: Make the NIGHTSUN
 
     // this.controls = new OrbitControls(this.camera)
-
     this.renderer = new THREE.WebGLRenderer({alpha: true, canvas: $('#three-canvas')[0]})
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     this.renderer.setClearColor(0xffffff, 1)
@@ -33,20 +30,11 @@ class Environment {
     this.controls = new THREE.FlyControls(this.camera, this.renderer.domElement)
     this.controls.movementSpeed = 0.2
     this.controls.rollSpeed = 0.01
-    console.log(this.controls)
 
     var windowResize = new WindowResize(this.renderer, this.camera)
-    //
-    // var firstTreePosition = new THREE.Vector3(0,0,0)
-    // var secondTreePosition = new THREE.Vector3(4,4,0)
-    // this._drawTree(6,firstTreePosition)
-    // this._drawTree(6,secondTreePosition)
-    // var leaf = new Leaf()
-    // this.scene.add(leaf.mesh)
 
 
 
-    this.trees = this.drawForest(4,2)
     // this.separateTrees(4)
     this.rustle = 0.1
     this.gravity = new THREE.Vector3(0,1,0)
@@ -55,11 +43,17 @@ class Environment {
     this.glideRatio = 2
     this.cameraDirection = this.camera.getWorldDirection()
 
-    var geometry = new THREE.PlaneGeometry(1000,1000)
-    geometry.lookAt(this.gravity)
-    var material = new THREE.MeshBasicMaterial( {color:0} )
-    var plane = new THREE.Mesh( geometry, material )
-    this.scene.add( plane )
+    this.planetRadius = 10
+    var planetGeometry = new THREE.SphereGeometry(this.planetRadius,32,32)
+    var planetMaterial = new THREE.MeshBasicMaterial( {color:0} )
+    var planet = new THREE.Mesh( planetGeometry, planetMaterial )
+    this.scene.add( planet )
+
+    this.camera.position.z = 30
+    this.camera.position.y = this.planetRadius
+
+    this.trees = this.drawForest(4,2)
+
   }
 
   render () {
@@ -97,36 +91,10 @@ class Environment {
         }
       }
 
-      // if(-Math.PI/2 < this.camera.rotation.y && this.camera.rotation.y < Math.PI/2){
-      //   this.camera.rotation.z*=0.9
-      // }
     }
 
-    //
-    // //rustle
-    // this.trees.forEach((treeRow) => {
-    //   treeRow.forEach((tree) => {
-    //     tree.leaves.forEach((leaf) => {
-    //       var angle = this.rustle*(Math.random()-0.5)
-    //       leaf.vertices.forEach((v) => {
-    //         v.sub(leaf.origin)
-    //         v.applyAxisAngle(leaf.axis,angle)
-    //         v.add(leaf.origin)
-    //       })
-    //       // leaf.vertices.forEach((v) => {
-    //       //   v.add(new THREE.Vector3(
-    //       //     this.rustle*(Math.random()-0.5),
-    //       //     this.rustle*(Math.random()-0.5),
-    //       //     this.rustle*(Math.random()-0.5)
-    //       //   ))
-    //       // })
-    //       leaf.verticesNeedUpdate = true
-    //     })
-    //   })
-    // })
   }
 
-  // 'private'
 
   control (e) {
     if(e.key===' ' && squirrel){
@@ -138,37 +106,6 @@ class Environment {
     } else {
       this.flying = false
     }
-    // if(e.key==='g'){
-    //   console.log(this.camera.rotation)
-    //   if(-Math.PI/2 < this.camera.rotation.x && this.camera.rotation.x < Math.PI/2){
-    //     this.camera.rotation.z = 0
-    //   } else {
-    //     this.camera.rotation.z = Math.PI
-    //   }
-
-
-  }
-
-  separate (X, Y) {
-    X.vertices.forEach((v) => {
-      Y.vertices.forEach((w) => {
-        if (v.distanceTo(w)<2){
-          var u = new THREE.Vector3(0,0,0)
-          u.add(v)
-          u.sub(w)
-          v.addScaledVector(u,1)
-        }
-      })
-    })
-  }
-
-  separateTrees (N) {
-    for(var i = 0; i<N-1; i++){
-      for(var j = 0; j<N-1; j++){
-        this.separate(this.trees[i][j].geometry,this.trees[i][j+1].geometry)
-        this.separate(this.trees[i][j].geometry,this.trees[i+1][j].geometry)
-      }
-    }
   }
 
   drawForest(n,N) {
@@ -177,14 +114,23 @@ class Environment {
       trees.push([])
       for(var j =-N/2; j<N/2; j++){
         var newTree = this.drawTree(n,0.1)
-        newTree.skeletonGeometry.translate(15*i,0,-15*j)
+        var xRot = Math.random()*2*Math.PI
+        var yRot = Math.random()*2*Math.PI
+        var zRot = Math.random()*2*Math.PI
+        newTree.skeletonGeometry.translate(0,this.planetRadius,0)
+        newTree.skeletonGeometry.rotateX(xRot)
+        newTree.skeletonGeometry.rotateY(yRot)
+        newTree.skeletonGeometry.rotateZ(zRot)
         // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
         var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b, side:THREE.DoubleSide})
         var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
         this.scene.add(skeletonMesh)
         var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
         newTree.leaves.forEach((leaf) => {
-          leaf.translate(15*i,0,-15*j)
+          leaf.translate(0,this.planetRadius,0)
+          leaf.rotateX(xRot)
+          leaf.rotateY(yRot)
+          leaf.rotateZ(zRot)
           this.scene.add(new THREE.Mesh(leaf,leafMaterial))
         })
         // this.scene.add(new THREE.Mesh(newTree.leafGeometry,leafMaterial))
