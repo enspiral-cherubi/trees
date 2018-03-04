@@ -51,7 +51,8 @@ class Environment {
     this.camera.position.z = 30
     this.camera.position.y = this.planetRadius
 
-    this.trees = this.drawForest(4,3)
+    //recursion depth, number of trees
+    this.trees = this.drawForest(4,4)
 
   }
 
@@ -61,14 +62,12 @@ class Environment {
     this.camera.getWorldDirection(this.cameraDirection)
     if(squirrel){
       var climbing = false
-      this.trees.forEach((treeRow) => {
-        treeRow.forEach((tree) => {
-          tree.skeletonGeometry.vertices.forEach((v) => {
-            if(v.distanceTo(this.camera.position) < 1){
-              climbing = true
-              // break
-            }
-          })
+      this.trees.forEach((tree) => {
+        tree.skeletonGeometry.vertices.forEach((v) => {
+          if(v.distanceTo(this.camera.position) < 1){
+            climbing = true
+            // break
+          }
         })
       })
 
@@ -117,32 +116,29 @@ class Environment {
 
   drawForest(n,N) {
     var trees = []
-    for(var i=-N/2;i<N/2;i++){
-      trees.push([])
-      for(var j =-N/2; j<N/2; j++){
-        var newTree = this.drawTree(n,0.1)
-        var xRot = Math.random()*2*Math.PI
-        var yRot = Math.random()*2*Math.PI
-        var zRot = Math.random()*2*Math.PI
-        newTree.skeletonGeometry.translate(0,this.planetRadius,0)
-        newTree.skeletonGeometry.rotateX(xRot)
-        newTree.skeletonGeometry.rotateY(yRot)
-        newTree.skeletonGeometry.rotateZ(zRot)
-        // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
-        var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b, side:THREE.DoubleSide})
-        var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
-        this.scene.add(skeletonMesh)
-        var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
-        newTree.leaves.forEach((leaf) => {
-          leaf.translate(0,this.planetRadius,0)
-          leaf.rotateX(xRot)
-          leaf.rotateY(yRot)
-          leaf.rotateZ(zRot)
-          this.scene.add(new THREE.Mesh(leaf,leafMaterial))
-        })
-        // this.scene.add(new THREE.Mesh(newTree.leafGeometry,leafMaterial))
-        trees[i+N/2].push(newTree)
-      }
+    for(var i = 0;i<N;i++){
+      var newTree = this.drawTree(n,0.1)
+      var xRot = Math.random()*2*Math.PI
+      var yRot = Math.random()*2*Math.PI
+      var zRot = Math.random()*2*Math.PI
+      newTree.skeletonGeometry.translate(0,this.planetRadius,0)
+      newTree.skeletonGeometry.rotateX(xRot)
+      newTree.skeletonGeometry.rotateY(yRot)
+      newTree.skeletonGeometry.rotateZ(zRot)
+      // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
+      var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b, side:THREE.DoubleSide})
+      var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
+      this.scene.add(skeletonMesh)
+      var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
+      newTree.leaves.forEach((leaf) => {
+        leaf.translate(0,this.planetRadius,0)
+        leaf.rotateX(xRot)
+        leaf.rotateY(yRot)
+        leaf.rotateZ(zRot)
+        this.scene.add(new THREE.Mesh(leaf,leafMaterial))
+      })
+      // this.scene.add(new THREE.Mesh(newTree.leafGeometry,leafMaterial))
+      trees.push(newTree)
     }
     return trees
 
