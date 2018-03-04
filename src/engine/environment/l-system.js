@@ -1,4 +1,5 @@
 import THREE from 'three'
+import Leaf from './leaf.js'
 
 
 class LSystem {
@@ -9,34 +10,50 @@ class LSystem {
       this.rule = rule
     }
     this.string = this.generateString(n,this.rule)
-    this.geometry = this.generateGeometry(angle,wobble)
+    this.leaves = []
+    this.generateLeafGeometry()
+    this.generateGeometry(angle,wobble)
   }
 
   generateRule () {
-    var rule = ''
-    var numLeftBrackets = 0
-    for(var j = 0; j<20; j++){
+    var rule = 'FFF[X'
+    var numLeftBrackets = 1
+    var numX = 2
+    var numSymbols = 0
+    while(true){
       var r = Math.random()
       if (r<0.2){
-        rule += '['
+        rule += '[F'
         numLeftBrackets += 1
-      } else if (r<0.4) {
+        numX +=1
+      } else if (r<0.3 && numX<5) {
         rule += 'X'
-      } else if (r<0.6) {
+        numX += 1
+      } else if (r<0.50) {
         rule += 'F'
-      } else if (r<0.7) {
-        rule += '+'
+      } else if (r<0.65) {
+        rule += '+F'
       } else if (r<0.8) {
-        rule += '-'
+        rule += '-F'
       } else if (numLeftBrackets>0) {
-        rule += ']'
+        rule += 'XL]'
+        if(r<0.9){
+          rule += '+'
+        } else {
+          rule += '-'
+        }
         numLeftBrackets -= 1
+        if (numSymbols>20){
+          break
+        }
       }
+      numSymbols +=1
     }
     while(numLeftBrackets > 0){
-      rule += ']'
+      rule += '+FL]'
       numLeftBrackets -= 1
     }
+    console.log(rule)
     return rule
   }
 
@@ -52,16 +69,36 @@ class LSystem {
     return string
   }
 
+
+  generateLeafGeometry() {
+      //r(theta) = (1+ b*sin(theta))*(1+a*cos(n*theta)) smoke weed every day
+      var resolution = 32
+      var r = Math.random()*0.4 + 0.1
+      var a = Math.random()
+      var b = 0.5+Math.random()/2
+      var n = Math.floor(Math.random()*10)
+      var geometry = new THREE.CircleGeometry(r,resolution)
+      for(var i = 0; i < resolution+1; i++){
+        geometry.vertices[i+1].multiplyScalar(
+          (1+b*Math.sin(2*Math.PI*(i/resolution)))*(1+a*Math.cos(n*2*Math.PI*(i/resolution)))
+        )
+      }
+      this.prototypeLeafGeometry = geometry
+  }
+
   generateGeometry(angle,wobble) {
     var position = new THREE.Vector3(0,0,0)
-    var direction = new THREE.Vector3(0.1,0.1,0)
+    var direction = new THREE.Vector3(0,0.1,0)
     var velocity = 0.5
     var axis = new THREE.Vector3(0,0,1)
     var axis2 = new THREE.Vector3(0,1,0)
     var axis3 = new THREE.Vector3(1,0,0)
     var savedPositions = []
     var savedDirections = []
-    var geometry = new THREE.Geometry()
+    var level = 1
+    var skeletonGeometry = new THREE.Geometry()
+    // var leafGeometry = new THREE.Geometry()
+
     var symbol = ''
     for (i = 0; i < this.string.length; i++){
       symbol = this.string.charAt(i)
@@ -73,7 +110,6 @@ class LSystem {
           i++
           symbol = this.string.charAt(i+1)
         }
-
         //draw forward
         var newPosition = new THREE.Vector3()
         newPosition.copy(position)
@@ -81,14 +117,20 @@ class LSystem {
 
         var segment = new THREE.LineCurve(position,newPosition)
         var segmentGeometry = new THREE.TubeGeometry(segment,
-          2, //segments
-          0.1, //radius
+          1, //segments
+          0.2/level, //radius
           5, //radius segments
           false //closed
         )
-        geometry.merge(segmentGeometry)
-
+        skeletonGeometry.merge(segmentGeometry)
         position = newPosition
+      }
+      else if (symbol === 'L'){
+        if (Math.random()>2/level){
+          var leaf = new Leaf(position,direction,this.prototypeLeafGeometry)
+          // leafGeometry.merge(leaf.geometry)
+          this.leaves.push(leaf.geometry)
+        }
       }
       else if (symbol === '-'){
         //turn left
@@ -100,6 +142,7 @@ class LSystem {
       }
       else if (symbol === '['){
         //save position and angle
+        level+=1
         var savedPosition = new THREE.Vector3()
         savedPosition.copy(position)
         savedPositions.push(savedPosition)
@@ -108,7 +151,9 @@ class LSystem {
         savedDirections.push(savedDirection)
       }
       else if (symbol === ']'){
+        //draw leaf
         //recall position and angle
+        level-=1
         position = savedPositions.pop()
         direction = savedDirections.pop()
         axis.applyAxisAngle(axis2,wobble)
@@ -117,17 +162,18 @@ class LSystem {
     }
 
     //add color
-    var numFaces = geometry.faces.length
+    var numFaces = skeletonGeometry.faces.length
     for (var i = 0; i < numFaces; i++){
       // var hue = parseInt(i/numFaces)
       var hue = i/numFaces
       var saturation = 1
       var color = new THREE.Color()
       color.setHSL(hue,saturation,0.5)
-      geometry.faces[i].color = color
+      skeletonGeometry.faces[i].color = color
     }
-    geometry.colorsNeedUpdate = true
-    return geometry
+    skeletonGeometry.colorsNeedUpdate = true
+    this.skeletonGeometry = skeletonGeometry
+    // this.leafGeometry = leafGeometry
   }
 }
 
