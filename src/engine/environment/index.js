@@ -90,10 +90,7 @@ class Environment {
         } else {
           this.velocity.set(0,0,0)
           this.controls.movementSpeed = 0.2
-          console.log('meow')
         }
-
-
 
         if(this.keyMap['w']){
           //gliding
@@ -105,20 +102,7 @@ class Environment {
         } else {
           //moving
           this.camera.position.addScaledVector(this.velocity,0.1)
-          // this.controls.movementSpeed = 0.2*this.planetRadius/Math.pow(this.camera.position.length(),2)
         }
-
-
-        //   //sitting
-        //   // this.camera.position.multiplyScalar(1.1*this.planetRadius/this.camera.position.length())
-        //   this.velocity.set(0,0,0)
-        //   //repulsive potential
-        //   this.velocity.addScaledVector(
-        //     this.camera.position,
-        //     (2/3)*Math.pow(this.camera.position.length(),2)*this.planetRadius)
-        //   this.controls.movementSpeed = 0.2
-        //   this.camera.position.addScaledVector(this.velocity,0.1)
-        // }
       }
 
     }
@@ -158,7 +142,22 @@ class Environment {
       newTree.skeletonGeometry.rotateY(yRot)
       newTree.skeletonGeometry.rotateZ(zRot)
       // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
-      var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b, side:THREE.DoubleSide})
+
+      var woodMaterial = new THREE.ShaderMaterial({
+      	uniforms: {
+          scale: { type: "f", value: 3},
+          frequency: { type: "f", value: 7},
+          noiseScale: { type: "f", value: 6.4},
+          ringScale: { type: "f", value: 0.6},
+          color1: { type: "c", value: new THREE.Color(0x703600) },
+          color2: { type: "c", value: new THREE.Color(0xBE9673) }
+      	},
+      	vertexShader: $( '#vertexShader' )[0].textContent,
+      	fragmentShader: $( '#fragmentShader' )[0].textContent
+      })
+
+      // var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b, side:THREE.DoubleSide})
+      var skeletonMaterial = woodMaterial
       var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
       this.scene.add(skeletonMesh)
       var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
