@@ -27,6 +27,9 @@ class Environment {
     this.renderer.setSize(window.innerWidth, window.innerHeight)
     this.renderer.setClearColor(0xffffff, 1)
 
+    var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+    this.scene.add( light );
+
     this.controls = new THREE.FlyControls(this.camera, this.renderer.domElement)
     this.controls.movementSpeed = 0.2
     this.controls.rollSpeed = 0.01
@@ -145,7 +148,7 @@ class Environment {
 
       var woodMaterial = new THREE.ShaderMaterial({
       	uniforms: {
-          scale: { type: "f", value: 3},
+          scale: { type: "f", value: 16},
           frequency: { type: "f", value: 7},
           noiseScale: { type: "f", value: 6.4},
           ringScale: { type: "f", value: 0.6},
