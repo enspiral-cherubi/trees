@@ -42,6 +42,7 @@ class Environment {
     this.glideRatio = 2
     this.cameraDirection = this.camera.getWorldDirection()
     this.flying = false
+    this.climbing = false
 
     this.planetRadius = 10
     var planetGeometry = new THREE.SphereGeometry(this.planetRadius,32,32)
@@ -53,7 +54,7 @@ class Environment {
     this.camera.position.y = this.planetRadius
 
     //recursion depth, number of trees
-    this.trees = this.drawForest(4,4)
+    this.trees = this.drawForest(4,10)
 
   }
 
@@ -62,44 +63,62 @@ class Environment {
     this.renderer.render(this.scene, this.camera)
     this.camera.getWorldDirection(this.cameraDirection)
     if(squirrel){
-      var climbing = false
+      this.climbing = false
       this.trees.forEach((tree) => {
         tree.skeletonGeometry.vertices.forEach((v) => {
           if(v.distanceTo(this.camera.position) < 1){
-            climbing = true
+            this.climbing = true
             // break
           }
         })
       })
 
-      if (climbing){
+      if (this.climbing){
         this.velocity.set(0,0,0)
         this.controls.movementSpeed = 0.05
       } else {
-        //gravity
-        this.velocity.addScaledVector(this.camera.position,-50/Math.pow(this.camera.position.length(),3))
-        //drag
-        this.velocity.addScaledVector(this.velocity,-0.05)
         if(this.camera.position.length() > this.planetRadius*1.1){
-          if(this.keyMap['w']){
-            //gliding
-            this.camera.position.addScaledVector(this.velocity,0.1/this.glideRatio)
-            this.camera.position.addScaledVector(
-              this.cameraDirection,
-              0.1*Math.abs(this.velocity.dot(this.camera.position)/this.camera.position.length())
-            )
+          //gravity
+          this.velocity.addScaledVector(
+            this.camera.position,
+            -50/Math.pow(this.camera.position.length(),3))
+          //drag
+          this.velocity.addScaledVector(
+            this.velocity,
+            -0.01)
             this.controls.movementSpeed = 0
-          } else {
-            //moving
-            this.camera.position.addScaledVector(this.velocity,0.1)
-            this.controls.movementSpeed = 0.2*this.planetRadius/Math.pow(this.camera.position.length(),2)
-          }
         } else {
-          //sitting
-          this.camera.position.multiplyScalar(1.1*this.planetRadius/this.camera.position.length())
           this.velocity.set(0,0,0)
           this.controls.movementSpeed = 0.2
+          console.log('meow')
         }
+
+
+
+        if(this.keyMap['w']){
+          //gliding
+          this.camera.position.addScaledVector(this.velocity,0.1/this.glideRatio)
+          this.camera.position.addScaledVector(
+            this.cameraDirection,
+            0.1*Math.abs(this.velocity.dot(this.camera.position)/this.camera.position.length())
+          )
+        } else {
+          //moving
+          this.camera.position.addScaledVector(this.velocity,0.1)
+          // this.controls.movementSpeed = 0.2*this.planetRadius/Math.pow(this.camera.position.length(),2)
+        }
+
+
+        //   //sitting
+        //   // this.camera.position.multiplyScalar(1.1*this.planetRadius/this.camera.position.length())
+        //   this.velocity.set(0,0,0)
+        //   //repulsive potential
+        //   this.velocity.addScaledVector(
+        //     this.camera.position,
+        //     (2/3)*Math.pow(this.camera.position.length(),2)*this.planetRadius)
+        //   this.controls.movementSpeed = 0.2
+        //   this.camera.position.addScaledVector(this.velocity,0.1)
+        // }
       }
 
     }
@@ -120,7 +139,7 @@ class Environment {
         this.camera.position.addScaledVector(this.cameraDirection,1)
       }
     }
-    if(e.key==='w'){
+    if(e.key==='w' && !this.climbing){
       this.flying = true
     } else {
       this.flying = false
