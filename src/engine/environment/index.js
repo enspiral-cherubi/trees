@@ -152,8 +152,8 @@ class Environment {
           frequency: { type: "f", value: 7},
           noiseScale: { type: "f", value: 6.4},
           ringScale: { type: "f", value: 0.6},
-          color1: { type: "c", value: new THREE.Color(0x703600) },
-          color2: { type: "c", value: new THREE.Color(0xBE9673) }
+          color1: { type: "c", value: new THREE.Color(0xffffff) },
+          color2: { type: "c", value: new THREE.Color(0x000000) }
       	},
       	vertexShader: $( '#vertexShader' )[0].textContent,
       	fragmentShader: $( '#fragmentShader' )[0].textContent
