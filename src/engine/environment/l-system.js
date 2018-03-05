@@ -3,12 +3,13 @@ import Leaf from './leaf.js'
 
 
 class LSystem {
-  constructor (n,rule,angle,wobble) {
+  constructor (n,rule,angle,wobble,scale) {
     if (rule === 'random') {
       this.rule = this.generateRule()
     } else {
       this.rule = rule
     }
+    this.scale = scale || 2
     this.string = this.generateString(n,this.rule)
     this.leaves = []
     this.generateLeafGeometry()
@@ -77,19 +78,23 @@ class LSystem {
       var a = Math.random()
       var b = 0.5+Math.random()/2
       var n = Math.floor(Math.random()*10)
+
+      // var stem = new THREE.LineCurve(new THREE.Vector3(0,0,0),new THREE.Vector3(1,0,0))
+      this.prototypeLeafGeometry = new THREE.Geometry()
       var geometry = new THREE.CircleGeometry(r,resolution)
       for(var i = 0; i < resolution+1; i++){
         geometry.vertices[i+1].multiplyScalar(
-          (1+b*Math.sin(2*Math.PI*(i/resolution)))*(1+a*Math.cos(n*2*Math.PI*(i/resolution)))
+          this.scale*(1+b*Math.sin(2*Math.PI*(i/resolution)))*(1+a*Math.cos(n*2*Math.PI*(i/resolution)))
         )
       }
-      this.prototypeLeafGeometry = geometry
+      geometry.translate(0,1,0)
+      this.prototypeLeafGeometry.merge(geometry)
   }
 
   generateGeometry(angle,wobble) {
     var position = new THREE.Vector3(0,0,0)
     var direction = new THREE.Vector3(0,0.1,0)
-    var velocity = 0.5
+    var velocity = 0.5*this.scale
     var axis = new THREE.Vector3(0,0,1)
     var axis2 = new THREE.Vector3(0,1,0)
     var axis3 = new THREE.Vector3(1,0,0)
@@ -118,7 +123,7 @@ class LSystem {
         var segment = new THREE.LineCurve(position,newPosition)
         var segmentGeometry = new THREE.TubeGeometry(segment,
           1, //segments
-          0.2/level, //radius
+          this.scale*0.2/level, //radius
           5, //radius segments
           false //closed
         )
