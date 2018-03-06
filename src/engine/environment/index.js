@@ -89,7 +89,7 @@ class Environment {
       this.climbing = false
       this.trees.forEach((tree) => {
         tree.skeletonGeometry.vertices.forEach((v) => {
-          if(v.distanceTo(this.camera.position) < 1){
+          if(v.distanceTo(this.camera.position) < 1.5){
             this.climbing = true
             // break
           }
@@ -97,37 +97,47 @@ class Environment {
       })
 
       if (this.climbing){
+        //climbing
         this.velocity.set(0,0,0)
         this.controls.movementSpeed = 0.05
-      } else {
-        if(this.camera.position.length() > this.planetRadius*1.1){
-          //gravity
-          this.velocity.addScaledVector(
-            this.camera.position,
-            -50/Math.pow(this.camera.position.length(),3))
-          //drag
-          this.velocity.addScaledVector(
-            this.velocity,
-            -0.005)
+      } else if(this.camera.position.length() > this.planetRadius*1.1){
+          //not on the ground but not on a tree
+          if(this.keyMap['w']){
+            //gliding
+            this.velocity.addScaledVector(
+              this.camera.position,
+              -50/(2*Math.pow(this.camera.position.length(),3)))
+            this.velocity.addScaledVector(
+              this.cameraDirection,
+              50*this.glideRatio/(Math.pow(this.camera.position.length(),2))
+            )
+          }
+          if(this.keyMap['s']){
+            //braking
+            this.velocity.addScaledVector(
+              this.camera.position,
+              -50/(2*Math.pow(this.camera.position.length(),3)))
+            this.velocity.addScaledVector(
+                this.velocity,
+                -0.05)
+          } else {
+            //falling
+            this.velocity.addScaledVector(
+              this.camera.position,
+              -50/Math.pow(this.camera.position.length(),3))
+          }
           this.controls.movementSpeed = 0
         } else {
-          this.velocity.set(0,0,0)
-          this.controls.movementSpeed = 0.2
-        }
-
-        if(this.keyMap['w']){
-          //gliding
-          this.camera.position.addScaledVector(this.velocity,0.1)
-          this.camera.position.addScaledVector(
-            this.cameraDirection,
-            0.1*this.glideRatio*Math.abs(this.velocity.dot(this.camera.position)/this.camera.position.length())
-          )
-        } else {
-          //moving
-          this.camera.position.addScaledVector(this.velocity,0.1)
-        }
+        //on the ground
+        this.velocity.set(0,0,0)
+        this.controls.movementSpeed = 0.2
       }
 
+      //drag
+      this.velocity.addScaledVector(
+        this.velocity,
+        -0.005)
+      this.camera.position.addScaledVector(this.velocity,0.1)
     }
 
 
@@ -143,7 +153,7 @@ class Environment {
       this.velocity.addScaledVector(this.camera.position,1/this.camera.position.length())
       this.camera.position.addScaledVector(this.camera.position,2/this.camera.position.length())
       if(this.keyMap['w']){
-        this.velocity.addScaledVector(this.cameraDirection,3)
+        this.velocity.addScaledVector(this.cameraDirection,2)
         this.camera.position.addScaledVector(this.cameraDirection,1)
       }
     }
