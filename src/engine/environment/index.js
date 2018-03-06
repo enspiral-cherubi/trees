@@ -88,12 +88,14 @@ class Environment {
     if(squirrel){
       this.climbing = false
       this.trees.forEach((tree) => {
-        tree.skeletonGeometry.vertices.forEach((v) => {
-          if(v.distanceTo(this.camera.position) < 1.5){
-            this.climbing = true
-            // break
-          }
-        })
+        if(tree.skeletonGeometry.boundingBox.containsPoint(this.camera.position)){
+          tree.skeletonGeometry.vertices.forEach((v) => {
+            if(v.distanceTo(this.camera.position) < 1){
+              this.climbing = true
+              // break
+            }
+          })
+        }
       })
 
       if (this.climbing){
@@ -203,6 +205,7 @@ class Environment {
         this.scene.add(new THREE.Mesh(leaf,leafMaterial))
       })
       // this.scene.add(new THREE.Mesh(newTree.leafGeometry,leafMaterial))
+      newTree.skeletonGeometry.computeBoundingBox()
       trees.push(newTree)
     }
     return trees
