@@ -115,7 +115,7 @@ class Environment {
             )
           }
           if(this.keyMap['s']){
-            //braking
+            //TODO:Soar
             this.velocity.addScaledVector(
               this.camera.position,
               -50/(2*Math.pow(this.camera.position.length(),3)))
