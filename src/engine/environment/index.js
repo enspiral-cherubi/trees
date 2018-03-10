@@ -25,7 +25,12 @@ class Environment {
     // this.controls = new OrbitControls(this.camera)
     this.renderer = new THREE.WebGLRenderer({alpha: true, canvas: $('#three-canvas')[0]})
     this.renderer.setSize(window.innerWidth, window.innerHeight)
-    this.renderer.setClearColor(0xffffff, 1)
+    this.renderer.setClearColor(0x000000, 1)
+
+
+
+    var light = new THREE.AmbientLight( 0x404040 ); // soft white light
+    this.scene.add( light );
 
     this.controls = new THREE.FlyControls(this.camera, this.renderer.domElement)
     this.controls.movementSpeed = 0.2
@@ -39,22 +44,40 @@ class Environment {
     // this.separateTrees(4)
     this.rustle = 0.1
     this.velocity = new THREE.Vector3(0,0,0)
-    this.glideRatio = 2
+    this.glideRatio = 0.5
     this.cameraDirection = this.camera.getWorldDirection()
     this.flying = false
     this.climbing = false
 
     this.planetRadius = 10
-    var planetGeometry = new THREE.SphereGeometry(this.planetRadius,32,32)
-    var planetMaterial = new THREE.MeshBasicMaterial( {color:0} )
+    var planetGeometry = new THREE.SphereGeometry(this.planetRadius,10,10)
+    var planetMaterial = new THREE.MeshBasicMaterial({color:0})
+    // var planetMaterial = new THREE.ShaderMaterial({
+    //   uniforms: {
+    //     scale: { type: "f", value: 16},
+    //     frequency: { type: "f", value: 7},
+    //     noiseScale: { type: "f", value: 6},
+    //     ringScale: { type: "f", value: 0.4},
+    //     color1: { type: "c", value: new THREE.Color(0xffffff) },
+    //     color2: { type: "c", value: new THREE.Color(0x000000) }
+    //   },
+    //   vertexShader: $( '#planetVertexShader' )[0].textContent,
+    //   fragmentShader: $( '#planetFragmentShader' )[0].textContent
+    // })
     var planet = new THREE.Mesh( planetGeometry, planetMaterial )
     this.scene.add( planet )
+
+    var planetEdgesGeometry = new THREE.EdgesGeometry( planetGeometry )
+    var edgeMaterial = new THREE.LineBasicMaterial( {linewidth: 10 } )
+    var planetEdges = new THREE.LineSegments( planetEdgesGeometry, edgeMaterial )
+    this.scene.add(planetEdges)
+
 
     this.camera.position.z = 30
     this.camera.position.y = this.planetRadius
 
     //recursion depth, number of trees
-    this.trees = this.drawForest(4,10)
+    this.trees = this.drawForest(4,5)
 
   }
 
@@ -65,63 +88,60 @@ class Environment {
     if(squirrel){
       this.climbing = false
       this.trees.forEach((tree) => {
-        tree.skeletonGeometry.vertices.forEach((v) => {
-          if(v.distanceTo(this.camera.position) < 1){
-            this.climbing = true
-            // break
-          }
-        })
+        if(tree.skeletonGeometry.boundingBox.containsPoint(this.camera.position)){
+          tree.skeletonGeometry.vertices.forEach((v) => {
+            if(v.distanceTo(this.camera.position) < 1){
+              this.climbing = true
+              // break
+            }
+          })
+        }
       })
 
       if (this.climbing){
+        //climbing
         this.velocity.set(0,0,0)
         this.controls.movementSpeed = 0.05
-      } else {
-        if(this.camera.position.length() > this.planetRadius*1.1){
-          //gravity
-          this.velocity.addScaledVector(
-            this.camera.position,
-            -50/Math.pow(this.camera.position.length(),3))
-          //drag
-          this.velocity.addScaledVector(
-            this.velocity,
-            -0.01)
-            this.controls.movementSpeed = 0
+      } else if(this.camera.position.length() > this.planetRadius*1.1){
+          //not on the ground but not on a tree
+          if(this.keyMap['w']){
+            //gliding
+            this.velocity.addScaledVector(
+              this.camera.position,
+              -50/(2*Math.pow(this.camera.position.length(),3)))
+            this.velocity.addScaledVector(
+              this.cameraDirection,
+              50*this.glideRatio/(Math.pow(this.camera.position.length(),2))
+            )
+          }
+          if(this.keyMap['s']){
+            //TODO:Soar
+            this.velocity.addScaledVector(
+              this.camera.position,
+              -50/(2*Math.pow(this.camera.position.length(),3)))
+            this.velocity.addScaledVector(
+                this.velocity,
+                -0.05)
+          } else {
+            //falling
+            this.velocity.addScaledVector(
+              this.camera.position,
+              -50/Math.pow(this.camera.position.length(),3))
+          }
+          this.controls.movementSpeed = 0
         } else {
-          this.velocity.set(0,0,0)
-          this.controls.movementSpeed = 0.2
-          console.log('meow')
-        }
-
-
-
-        if(this.keyMap['w']){
-          //gliding
-          this.camera.position.addScaledVector(this.velocity,0.1/this.glideRatio)
-          this.camera.position.addScaledVector(
-            this.cameraDirection,
-            0.1*Math.abs(this.velocity.dot(this.camera.position)/this.camera.position.length())
-          )
-        } else {
-          //moving
-          this.camera.position.addScaledVector(this.velocity,0.1)
-          // this.controls.movementSpeed = 0.2*this.planetRadius/Math.pow(this.camera.position.length(),2)
-        }
-
-
-        //   //sitting
-        //   // this.camera.position.multiplyScalar(1.1*this.planetRadius/this.camera.position.length())
-        //   this.velocity.set(0,0,0)
-        //   //repulsive potential
-        //   this.velocity.addScaledVector(
-        //     this.camera.position,
-        //     (2/3)*Math.pow(this.camera.position.length(),2)*this.planetRadius)
-        //   this.controls.movementSpeed = 0.2
-        //   this.camera.position.addScaledVector(this.velocity,0.1)
-        // }
+        //on the ground
+        this.velocity.set(0,0,0)
+        this.controls.movementSpeed = 0.2
       }
 
+      //drag
+      this.velocity.addScaledVector(
+        this.velocity,
+        -0.005)
+      this.camera.position.addScaledVector(this.velocity,0.1)
     }
+
 
   }
 
@@ -135,7 +155,7 @@ class Environment {
       this.velocity.addScaledVector(this.camera.position,1/this.camera.position.length())
       this.camera.position.addScaledVector(this.camera.position,2/this.camera.position.length())
       if(this.keyMap['w']){
-        this.velocity.addScaledVector(this.cameraDirection,3)
+        this.velocity.addScaledVector(this.cameraDirection,2)
         this.camera.position.addScaledVector(this.cameraDirection,1)
       }
     }
@@ -158,7 +178,22 @@ class Environment {
       newTree.skeletonGeometry.rotateY(yRot)
       newTree.skeletonGeometry.rotateZ(zRot)
       // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
-      var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b, side:THREE.DoubleSide})
+
+      var woodMaterial = new THREE.ShaderMaterial({
+      	uniforms: {
+          scale: { type: "f", value: 16},
+          frequency: { type: "f", value: 7},
+          noiseScale: { type: "f", value: 6},
+          ringScale: { type: "f", value: 0.4},
+          color1: { type: "c", value: new THREE.Color(0xffffff) },
+          color2: { type: "c", value: new THREE.Color(0x000000) }
+      	},
+      	vertexShader: $( '#vertexShader' )[0].textContent,
+      	fragmentShader: $( '#fragmentShader' )[0].textContent
+      })
+
+      // var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b, side:THREE.DoubleSide})
+      var skeletonMaterial = woodMaterial
       var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
       this.scene.add(skeletonMesh)
       var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
@@ -170,6 +205,7 @@ class Environment {
         this.scene.add(new THREE.Mesh(leaf,leafMaterial))
       })
       // this.scene.add(new THREE.Mesh(newTree.leafGeometry,leafMaterial))
+      newTree.skeletonGeometry.computeBoundingBox()
       trees.push(newTree)
     }
     return trees

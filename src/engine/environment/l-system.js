@@ -65,8 +65,9 @@ class LSystem {
       // string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
       // string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X-[X+]]]-X)') //nice with 3d hack
       string = string.replace(/X/g,rule) //nice with 3d hack
-      string = string.replace(/F/g,'FF')
+      string = string.replace(/F/g,'FF') //whoa
     }
+    string.replace(/X/g,'') //don't factor into final draw instructions
     return string
   }
 
@@ -101,8 +102,8 @@ class LSystem {
     var savedPositions = []
     var savedDirections = []
     var level = 1
+    var skeletonPieces = []
     var skeletonGeometry = new THREE.Geometry()
-    // var leafGeometry = new THREE.Geometry()
 
     var symbol = ''
     for (i = 0; i < this.string.length; i++){
@@ -119,21 +120,14 @@ class LSystem {
         var newPosition = new THREE.Vector3()
         newPosition.copy(position)
         newPosition.addScaledVector(direction,velocity*numFs)
-
         var segment = new THREE.LineCurve(position,newPosition)
-        var segmentGeometry = new THREE.TubeGeometry(segment,
-          1, //segments
-          this.scale*0.2/level, //radius
-          5, //radius segments
-          false //closed
-        )
-        skeletonGeometry.merge(segmentGeometry)
+        segment.level = level
+        skeletonPieces.push(segment)
         position = newPosition
       }
       else if (symbol === 'L'){
         if (Math.random()>2/level){
           var leaf = new Leaf(position,direction,this.prototypeLeafGeometry)
-          // leafGeometry.merge(leaf.geometry)
           this.leaves.push(leaf.geometry)
         }
       }
@@ -166,6 +160,32 @@ class LSystem {
       }
     }
 
+    //now build by level
+    var length = 0
+    i = 0
+    console.log(skeletonPieces.length)
+    while(i < skeletonPieces.length){
+        length = 0
+        var branchPath = new THREE.CurvePath()
+
+        level = skeletonPieces[i].level
+
+        while(i<skeletonPieces.length && skeletonPieces[i].level === level){
+          branchPath.add(skeletonPieces[i])
+          length++
+          i++
+        }
+
+        skeletonGeometry.merge(new THREE.TubeGeometry(branchPath,
+          length, //segments
+          this.scale*0.2/level, //radius
+          12, //radius segments
+          false //closed
+        ))
+
+    }
+
+
     //add color
     var numFaces = skeletonGeometry.faces.length
     for (var i = 0; i < numFaces; i++){
@@ -180,6 +200,7 @@ class LSystem {
     this.skeletonGeometry = skeletonGeometry
     // this.leafGeometry = leafGeometry
   }
+
 }
 
 export default LSystem
