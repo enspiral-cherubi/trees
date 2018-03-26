@@ -12,7 +12,7 @@ class LDNA{
   }
 
     generateRule () {
-      var rule = 'FFF[-X'
+      var rule = 'FFF[X'
       var numLeftBrackets = 1
       var numX = 2
       var numSymbols = 0
