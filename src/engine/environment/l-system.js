@@ -1,75 +1,72 @@
 import THREE from 'three'
 import Leaf from './leaf.js'
+import LDNA from './l-dna.js'
 
 
 class LSystem {
   constructor (n,rule,angle,wobble,scale) {
-    if (rule === 'random') {
-      this.rule = this.generateRule()
-    } else {
-      this.rule = rule
-    }
+    this.DNA = new LDNA(n,rule)
     this.scale = scale || 2
-    this.string = this.generateString(n,this.rule)
+    this.string = this.DNA.instructions
     this.leaves = []
     this.generateLeafGeometry()
     this.generateGeometry(angle,wobble)
   }
 
-  generateRule () {
-    var rule = 'FFF[X'
-    var numLeftBrackets = 1
-    var numX = 2
-    var numSymbols = 0
-    while(true){
-      var r = Math.random()
-      if (r<0.2){
-        rule += '[F'
-        numLeftBrackets += 1
-        numX +=1
-      } else if (r<0.3 && numX<5) {
-        rule += 'X'
-        numX += 1
-      } else if (r<0.50) {
-        rule += 'F'
-      } else if (r<0.65) {
-        rule += '+F'
-      } else if (r<0.8) {
-        rule += '-F'
-      } else if (numLeftBrackets>0) {
-        rule += 'XL]'
-        if(r<0.9){
-          rule += '+'
-        } else {
-          rule += '-'
-        }
-        numLeftBrackets -= 1
-        if (numSymbols>20){
-          break
-        }
-      }
-      numSymbols +=1
-    }
-    while(numLeftBrackets > 0){
-      rule += '+FL]'
-      numLeftBrackets -= 1
-    }
-    console.log(rule)
-    return rule
-  }
-
-  generateString (n,rule) {
-    var string = 'X'
-    for (var i = 0; i < n; i++){
-      //these rules encode the grammar
-      // string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
-      // string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X-[X+]]]-X)') //nice with 3d hack
-      string = string.replace(/X/g,rule) //nice with 3d hack
-      string = string.replace(/F/g,'FF') //whoa
-    }
-    string.replace(/X/g,'') //don't factor into final draw instructions
-    return string
-  }
+  // generateRule () {
+  //   var rule = 'FFF[-X'
+  //   var numLeftBrackets = 1
+  //   var numX = 2
+  //   var numSymbols = 0
+  //   while(true){
+  //     var r = Math.random()
+  //     if (r<0.2){
+  //       rule += '[F'
+  //       numLeftBrackets += 1
+  //       numX +=1
+  //     } else if (r<0.3 && numX<5) {
+  //       rule += 'X'
+  //       numX += 1
+  //     } else if (r<0.50) {
+  //       rule += 'F'
+  //     } else if (r<0.65) {
+  //       rule += '+F'
+  //     } else if (r<0.8) {
+  //       rule += '-F'
+  //     } else if (numLeftBrackets>0) {
+  //       rule += 'XL]'
+  //       if(r<0.9){
+  //         rule += '+'
+  //       } else {
+  //         rule += '-'
+  //       }
+  //       numLeftBrackets -= 1
+  //       if (numSymbols>20){
+  //         break
+  //       }
+  //     }
+  //     numSymbols +=1
+  //   }
+  //   while(numLeftBrackets > 0){
+  //     rule += '+FL]'
+  //     numLeftBrackets -= 1
+  //   }
+  //   console.log(rule)
+  //   return rule
+  // }
+  //
+  // generateString (n,rule) {
+  //   var string = 'X'
+  //   for (var i = 0; i < n; i++){
+  //     //these rules encode the grammar
+  //     // string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
+  //     // string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X-[X+]]]-X)') //nice with 3d hack
+  //     string = string.replace(/X/g,rule) //nice with 3d hack
+  //     string = string.replace(/F/g,'FF') //whoa
+  //   }
+  //   string.replace(/X/g,'') //don't factor into final draw instructions
+  //   return string
+  // }
 
 
   generateLeafGeometry() {
@@ -103,7 +100,6 @@ class LSystem {
     var savedDirections = []
     var level = 1
     var skeletonPieces = []
-    var skeletonGeometry = new THREE.Geometry()
 
     var symbol = ''
     for (i = 0; i < this.string.length; i++){
@@ -160,10 +156,14 @@ class LSystem {
       }
     }
 
-    //now build by level
+    //now build tree structure by level
+    var depthFirstSkeletonGeometry = new THREE.Geometry()
     var length = 0
     i = 0
     console.log(skeletonPieces.length)
+    var lastLevel = 1
+    var lastBranchPaths = []
+    var components = 0
     while(i < skeletonPieces.length){
         length = 0
         var branchPath = new THREE.CurvePath()
@@ -175,8 +175,42 @@ class LSystem {
           length++
           i++
         }
+        branchPath.length = length
+        branchPath.level = level
 
-        skeletonGeometry.merge(new THREE.TubeGeometry(branchPath,
+        if(level === 1){
+          //can happen several times if tree is reducible
+          components += 1
+          if(components === 1){
+            //only happens once
+            this.trunkPath = branchPath
+          }
+          branchPath.children = []
+          if(components > 1){
+            lastBranchPaths[lastBranchPaths.length-1].children.push(branchPath)
+          }
+          lastBranchPaths.push(branchPath)
+        }
+        if(level > lastLevel){
+          //encountered [, stepping up the tree
+          branchPath.children = []
+          lastBranchPaths[lastBranchPaths.length-1].children.push(branchPath)
+          lastBranchPaths.push(branchPath)
+          lastLevel+=1
+        }
+        if(level < lastLevel){
+          //encountered ], stepping down the tree
+          branchPath.children = []
+          while(level <= lastLevel){
+            lastBranchPaths.pop()
+            lastLevel -= 1
+          }
+          lastBranchPaths[lastBranchPaths.length-1].children.push(branchPath)
+          lastBranchPaths.push(branchPath)
+        }
+
+        depthFirstSkeletonGeometry.merge(new THREE.TubeGeometry(
+          branchPath,
           length, //segments
           this.scale*0.2/level, //radius
           12, //radius segments
@@ -185,6 +219,9 @@ class LSystem {
 
     }
 
+    // depthFirstSkeletonGeometry.translate(10,0,0)
+    var skeletonGeometry = depthFirstSkeletonGeometry
+    // var skeletonGeometry = this.generateBreadthFirstGeometry(this.trunkPath)
 
     //add color
     var numFaces = skeletonGeometry.faces.length
@@ -199,7 +236,23 @@ class LSystem {
     skeletonGeometry.colorsNeedUpdate = true
     this.skeletonGeometry = skeletonGeometry
     // this.leafGeometry = leafGeometry
+    console.log(this.trunkPath)
+
   }
+
+generateBreadthFirstGeometry(path){
+  var pathGeometry = new THREE.TubeGeometry(
+    path,
+    path.length, //segments
+    this.scale*0.2/path.level, //radius
+    12, //radius segments
+    false //closed
+  )
+  path.children.forEach((p) => {
+    pathGeometry.merge(this.generateBreadthFirstGeometry(p))
+  })
+  return pathGeometry
+}
 
 }
 

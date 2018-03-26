@@ -44,7 +44,7 @@ class Environment {
     // this.separateTrees(4)
     this.rustle = 0.1
     this.velocity = new THREE.Vector3(0,0,0)
-    this.glideRatio = 0.5
+    this.glideRatio = 2
     this.cameraDirection = this.camera.getWorldDirection()
     this.flying = false
     this.climbing = false
@@ -77,7 +77,7 @@ class Environment {
     this.camera.position.y = this.planetRadius
 
     //recursion depth, number of trees
-    this.trees = this.drawForest(4,5)
+    this.trees = this.drawForest(4,1)
 
   }
 
@@ -90,7 +90,7 @@ class Environment {
       this.trees.forEach((tree) => {
         if(tree.skeletonGeometry.boundingBox.containsPoint(this.camera.position)){
           tree.skeletonGeometry.vertices.forEach((v) => {
-            if(v.distanceTo(this.camera.position) < 1){
+            if(v.distanceTo(this.camera.position) < 1.5){
               this.climbing = true
               // break
             }
@@ -118,7 +118,7 @@ class Environment {
             //TODO:Soar
             this.velocity.addScaledVector(
               this.camera.position,
-              -50/(2*Math.pow(this.camera.position.length(),3)))
+              0.05*this.velocity.length()/this.camera.position.length())
             this.velocity.addScaledVector(
                 this.velocity,
                 -0.05)
@@ -126,7 +126,7 @@ class Environment {
             //falling
             this.velocity.addScaledVector(
               this.camera.position,
-              -50/Math.pow(this.camera.position.length(),3))
+              -5/Math.pow(this.camera.position.length(),2))
           }
           this.controls.movementSpeed = 0
         } else {
@@ -179,20 +179,20 @@ class Environment {
       newTree.skeletonGeometry.rotateZ(zRot)
       // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
 
-      var woodMaterial = new THREE.ShaderMaterial({
-      	uniforms: {
-          scale: { type: "f", value: 16},
-          frequency: { type: "f", value: 7},
-          noiseScale: { type: "f", value: 6},
-          ringScale: { type: "f", value: 0.4},
-          color1: { type: "c", value: new THREE.Color(0xffffff) },
-          color2: { type: "c", value: new THREE.Color(0x000000) }
-      	},
-      	vertexShader: $( '#vertexShader' )[0].textContent,
-      	fragmentShader: $( '#fragmentShader' )[0].textContent
-      })
+      // var woodMaterial = new THREE.ShaderMaterial({
+      // 	uniforms: {
+      //     scale: { type: "f", value: 16},
+      //     frequency: { type: "f", value: 7},
+      //     noiseScale: { type: "f", value: 6},
+      //     ringScale: { type: "f", value: 0.4},
+      //     color1: { type: "c", value: new THREE.Color(0xffffff) },
+      //     color2: { type: "c", value: new THREE.Color(0x000000) }
+      // 	},
+      // 	vertexShader: $( '#vertexShader' )[0].textContent,
+      // 	fragmentShader: $( '#fragmentShader' )[0].textContent
+      // })
 
-      // var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b, side:THREE.DoubleSide})
+      var woodMaterial = new THREE.MeshPhongMaterial({color:0x91744b, side:THREE.DoubleSide})
       var skeletonMaterial = woodMaterial
       var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
       this.scene.add(skeletonMesh)
