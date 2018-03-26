@@ -9,85 +9,11 @@ class LSystem {
     this.scale = scale || 2
     this.string = this.DNA.instructions
     this.leaves = []
-    this.generateLeafGeometry()
+    this.protoLeaf = new Leaf()
+    this.prototypeLeafGeometry = this.protoLeaf.geometry
     this.generateGeometry(angle,wobble)
   }
 
-  // generateRule () {
-  //   var rule = 'FFF[-X'
-  //   var numLeftBrackets = 1
-  //   var numX = 2
-  //   var numSymbols = 0
-  //   while(true){
-  //     var r = Math.random()
-  //     if (r<0.2){
-  //       rule += '[F'
-  //       numLeftBrackets += 1
-  //       numX +=1
-  //     } else if (r<0.3 && numX<5) {
-  //       rule += 'X'
-  //       numX += 1
-  //     } else if (r<0.50) {
-  //       rule += 'F'
-  //     } else if (r<0.65) {
-  //       rule += '+F'
-  //     } else if (r<0.8) {
-  //       rule += '-F'
-  //     } else if (numLeftBrackets>0) {
-  //       rule += 'XL]'
-  //       if(r<0.9){
-  //         rule += '+'
-  //       } else {
-  //         rule += '-'
-  //       }
-  //       numLeftBrackets -= 1
-  //       if (numSymbols>20){
-  //         break
-  //       }
-  //     }
-  //     numSymbols +=1
-  //   }
-  //   while(numLeftBrackets > 0){
-  //     rule += '+FL]'
-  //     numLeftBrackets -= 1
-  //   }
-  //   console.log(rule)
-  //   return rule
-  // }
-  //
-  // generateString (n,rule) {
-  //   var string = 'X'
-  //   for (var i = 0; i < n; i++){
-  //     //these rules encode the grammar
-  //     // string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
-  //     // string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X-[X+]]]-X)') //nice with 3d hack
-  //     string = string.replace(/X/g,rule) //nice with 3d hack
-  //     string = string.replace(/F/g,'FF') //whoa
-  //   }
-  //   string.replace(/X/g,'') //don't factor into final draw instructions
-  //   return string
-  // }
-
-
-  generateLeafGeometry() {
-      //r(theta) = (1+ b*sin(theta))*(1+a*cos(n*theta)) smoke weed every day
-      var resolution = 32
-      var r = Math.random()*0.4 + 0.1
-      var a = Math.random()
-      var b = 0.5+Math.random()/2
-      var n = Math.floor(Math.random()*10)
-
-      // var stem = new THREE.LineCurve(new THREE.Vector3(0,0,0),new THREE.Vector3(1,0,0))
-      this.prototypeLeafGeometry = new THREE.Geometry()
-      var geometry = new THREE.CircleGeometry(r,resolution)
-      for(var i = 0; i < resolution+1; i++){
-        geometry.vertices[i+1].multiplyScalar(
-          this.scale*(1+b*Math.sin(2*Math.PI*(i/resolution)))*(1+a*Math.cos(n*2*Math.PI*(i/resolution)))
-        )
-      }
-      geometry.translate(0,1,0)
-      this.prototypeLeafGeometry.merge(geometry)
-  }
 
   generateGeometry(angle,wobble) {
     var position = new THREE.Vector3(0,0,0)
