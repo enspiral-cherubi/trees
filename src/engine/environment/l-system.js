@@ -43,6 +43,7 @@ class LSystem {
         newPosition.copy(position)
         newPosition.addScaledVector(direction,velocity*numFs)
         var segment = new THREE.LineCurve(position,newPosition)
+        segment.leaves = []
         segment.level = level
         skeletonPieces.push(segment)
         position = newPosition
@@ -51,6 +52,7 @@ class LSystem {
         if (Math.random()>2/level){
           var leaf = new Leaf(position,direction,this.prototypeLeafGeometry)
           this.leaves.push(leaf.geometry)
+          skeletonPieces[skeletonPieces.length-1].leaves.push(leaf.geometry)
         }
       }
       else if (symbol === '-'){
@@ -84,6 +86,8 @@ class LSystem {
 
     //now build tree structure by level
     var depthFirstSkeletonGeometry = new THREE.Geometry()
+    var branches = []
+    var leafClusters = []
     var length = 0
     i = 0
     console.log(skeletonPieces.length)
@@ -92,12 +96,17 @@ class LSystem {
     var components = 0
     while(i < skeletonPieces.length){
         length = 0
+        var leafCluster = new THREE.Geometry()
         var branchPath = new THREE.CurvePath()
+        branchPath.leaves = []
 
         level = skeletonPieces[i].level
 
         while(i<skeletonPieces.length && skeletonPieces[i].level === level){
           branchPath.add(skeletonPieces[i])
+          skeletonPieces[i].leaves.forEach((leaf) => {
+            leafCluster.merge(leaf)
+          })
           length++
           i++
         }
@@ -135,13 +144,21 @@ class LSystem {
           lastBranchPaths.push(branchPath)
         }
 
-        depthFirstSkeletonGeometry.merge(new THREE.TubeGeometry(
+        branches.push(new THREE.TubeGeometry(
           branchPath,
           length, //segments
           this.scale*0.2/level, //radius
           12, //radius segments
           false //closed
         ))
+        leafClusters.push(leafCluster)
+        // depthFirstSkeletonGeometry.merge(new THREE.TubeGeometry(
+        //   branchPath,
+        //   length, //segments
+        //   this.scale*0.2/level, //radius
+        //   12, //radius segments
+        //   false //closed
+        // ))
 
     }
 

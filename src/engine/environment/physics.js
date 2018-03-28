@@ -3,7 +3,7 @@ import THREE from 'three'
 
 class Physics {
 
-  constructor (camera,controls,keyMap,trees,glideRatio,planetRadius) {
+  constructor (camera,controls,keyMap,trees,glideRatio,planetRadius,climbingDistance,climbingSpeed) {
       //things physics interacts with
       this.camera = camera
       this.controls = controls
@@ -15,10 +15,14 @@ class Physics {
       //parameters
       this.glideRatio = glideRatio
       this.planetRadius = planetRadius
+      this.climbingDistance = climbingDistance
+      this.climbingSpeed = climbingSpeed
 
       //helper objects
       this.cameraDirection = this.camera.getWorldDirection()
       this.velocity = new THREE.Vector3(0,0,0)
+      this.multiplier = 1
+      this.acceleration = new THREE.Vector3(0,0,0)
   }
 
   update () {
@@ -31,7 +35,7 @@ class Physics {
     this.trees.forEach((tree) => {
       if(tree.skeletonGeometry.boundingBox.containsPoint(this.camera.position)){
         tree.skeletonGeometry.vertices.forEach((v) => {
-          if(v.distanceTo(this.camera.position) < 1.5){
+          if(v.distanceTo(this.camera.position) < this.climbingDistance){
             this.climbing = true
             // break
           }
@@ -43,7 +47,7 @@ class Physics {
     if (this.climbing){
       //climbing
       this.velocity.set(0,0,0)
-      this.controls.movementSpeed = 0.05
+      this.controls.movementSpeed = this.climbingSpeed
     } else if(this.camera.position.length() > this.planetRadius*1.1){
         //not on the ground but not on a tree
         if(this.keyMap['w']){
@@ -56,15 +60,20 @@ class Physics {
             50*this.glideRatio/(Math.pow(this.camera.position.length(),2))
           )
         }
-        if(this.keyMap['s']){
-          //TODO:Soar
-          this.velocity.addScaledVector(
-            this.camera.position,
-            0.05*this.velocity.length()/this.camera.position.length())
-          this.velocity.addScaledVector(
-              this.velocity,
-              -0.05)
-        } else {
+        // if(this.keyMap['s']){
+        //   if(this.velocity.length()>0){
+        //     this.acceleration.copy(this.velocity)
+        //     this.acceleration.projectOnPlane(this.camera.position)
+        //     console.log(this.acceleration)
+        //     this.multiplier = this.acceleration.length()*0.05
+        //     console.log(this.multiplier)
+        //     this.velocity.addScaledVector(this.camera.position,this.multiplier)
+        //   }
+        //   this.velocity.addScaledVector(
+        //       this.velocity,
+        //       -0.05)
+        // } else
+        {
           //falling
           this.velocity.addScaledVector(
             this.camera.position,

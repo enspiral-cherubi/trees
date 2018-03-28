@@ -7,6 +7,7 @@ var FlyControls = ThreeFlyControls(THREE)
 import WindowResize from 'three-window-resize'
 import LSystem from './l-system.js'
 import Leaf from './leaf.js'
+import Planet from './planet.js'
 import Physics from './physics.js'
 var Color = require("color")
 var squirrel = true
@@ -51,36 +52,22 @@ class Environment {
     this.climbing = false
 
     this.planetRadius = 10
-    var planetGeometry = new THREE.SphereGeometry(this.planetRadius,10,10)
-    var planetMaterial = new THREE.MeshBasicMaterial({color:0})
-    // var planetMaterial = new THREE.ShaderMaterial({
-    //   uniforms: {
-    //     scale: { type: "f", value: 16},
-    //     frequency: { type: "f", value: 7},
-    //     noiseScale: { type: "f", value: 6},
-    //     ringScale: { type: "f", value: 0.4},
-    //     color1: { type: "c", value: new THREE.Color(0xffffff) },
-    //     color2: { type: "c", value: new THREE.Color(0x000000) }
-    //   },
-    //   vertexShader: $( '#planetVertexShader' )[0].textContent,
-    //   fragmentShader: $( '#planetFragmentShader' )[0].textContent
-    // })
-    var planet = new THREE.Mesh( planetGeometry, planetMaterial )
-    this.scene.add( planet )
-
-    var planetEdgesGeometry = new THREE.EdgesGeometry( planetGeometry )
-    var edgeMaterial = new THREE.LineBasicMaterial( {linewidth: 10 } )
-    var planetEdges = new THREE.LineSegments( planetEdgesGeometry, edgeMaterial )
-    this.scene.add(planetEdges)
+    var planet = new Planet(this.planetRadius,1, new THREE.Vector3(0,0,0))
+    planet.addToScene(this.scene)
 
 
     this.camera.position.z = 30
     this.camera.position.y = this.planetRadius
 
-    //recursion depth, number of trees
-    this.trees = this.drawForest(4,1)
 
-    this.physics = new Physics(this.camera,this.controls,this.keyMap,this.trees,2,10)
+
+    this.physics = new Physics(
+      this.camera,this.controls,this.keyMap,this.trees,
+      2, //glide ratio
+      this.planetRadius,
+      1.5, //climbing distance
+      0.05 //climbing speed
+    )
 
   }
 
@@ -88,7 +75,7 @@ class Environment {
 
     this.renderer.render(this.scene, this.camera)
     this.camera.getWorldDirection(this.cameraDirection)
-    this.physics.update()
+    // this.physics.update()
 
 
   }
@@ -113,65 +100,6 @@ class Environment {
       this.flying = false
     }
   }
-
-  drawForest(n,N) {
-    var trees = []
-    for(var i = 0;i<N;i++){
-      var newTree = this.drawTree(n,0.1)
-      var xRot = Math.random()*2*Math.PI
-      var yRot = Math.random()*2*Math.PI
-      var zRot = Math.random()*2*Math.PI
-      newTree.skeletonGeometry.translate(0,this.planetRadius,0)
-      newTree.skeletonGeometry.rotateX(xRot)
-      newTree.skeletonGeometry.rotateY(yRot)
-      newTree.skeletonGeometry.rotateZ(zRot)
-      // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
-
-      // var woodMaterial = new THREE.ShaderMaterial({
-      // 	uniforms: {
-      //     scale: { type: "f", value: 16},
-      //     frequency: { type: "f", value: 7},
-      //     noiseScale: { type: "f", value: 6},
-      //     ringScale: { type: "f", value: 0.4},
-      //     color1: { type: "c", value: new THREE.Color(0xffffff) },
-      //     color2: { type: "c", value: new THREE.Color(0x000000) }
-      // 	},
-      // 	vertexShader: $( '#vertexShader' )[0].textContent,
-      // 	fragmentShader: $( '#fragmentShader' )[0].textContent
-      // })
-
-      var woodMaterial = new THREE.MeshPhongMaterial({color:0x91744b, side:THREE.DoubleSide})
-      var skeletonMaterial = woodMaterial
-      var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
-      this.scene.add(skeletonMesh)
-      var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
-      newTree.leaves.forEach((leaf) => {
-        leaf.translate(0,this.planetRadius,0)
-        leaf.rotateX(xRot)
-        leaf.rotateY(yRot)
-        leaf.rotateZ(zRot)
-        this.scene.add(new THREE.Mesh(leaf,leafMaterial))
-      })
-      // this.scene.add(new THREE.Mesh(newTree.leafGeometry,leafMaterial))
-      newTree.skeletonGeometry.computeBoundingBox()
-      trees.push(newTree)
-    }
-    return trees
-
-  }
-
-  drawTree (n) {
-    // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-[X+]]]-X',Math.PI/5,Math.PI/5)
-    // FFF[FXL]+[F[FF+-FXL]XXL]FX[F[F[FFF[FXL]]]]
-    // FFF[FFX+F[F[F-X]FFX]XF-XF[F+X]]
-    // FFF[FF+XL]-[FF+-XL]FFXF[F[FXL]X+]
-    // return new LSystem(n,'F-[[X]+X]+F[+F[F+X-]-]',Math.PI/5,Math.PI/5)
-    // return new LSystem(n,'F-[[X]+X]-F[+[X+FX-]-]',Math.PI/5,Math.PI/5) // good idea to balance # of +s with -s
-    // FFF[X-F-FXL][F+FXL]XFFFX-FFFF-F[F+F[F[F[FXL]+FL]+FL]+FL]
-    //was PI/5 for each (angle, wobble)
-    return new LSystem(n,'random',Math.PI/4,Math.PI/4)
-  }
-
 
 }
 
