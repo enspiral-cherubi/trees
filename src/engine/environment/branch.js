@@ -15,10 +15,7 @@ class Branch {
       true                     // openEnded
     )
 
-
-    var material = new THREE.MeshNormalMaterial({skinning:true, side:THREE.DoubleSide})
-
-    this.mesh = new THREE.Mesh(this.geometry,material)
+    this.mesh = new THREE.SkinnedMesh(this.geometry)
 
 
     for ( var i = 0; i < this.geometry.vertices.length; i ++ ) {
@@ -26,46 +23,39 @@ class Branch {
       var vertex = this.geometry.vertices[ i ]
       var y = ( vertex.y + numCurves/2 )
 
-      var skinIndex = Math.floor( 2*y / numCurves )
-      var skinWeight = ( y % numCurves ) / numCurves
+      var skinIndex = Math.floor( y / numCurves )
+      console.log(skinIndex)
+      // var skinWeight = ( y % numCurves ) / numCurves
 
-      this.geometry.skinIndices.push( new THREE.Vector4( skinIndex, skinIndex + 1, 0, 0 ) )
-      this.geometry.skinWeights.push( new THREE.Vector4( 1 - skinWeight, skinWeight, 0, 0 ) )
+      this.geometry.skinIndices.push( new THREE.Vector4( skinIndex, skinIndex + 1, skinIndex - 1, 0 ) )
+      this.geometry.skinWeights.push( new THREE.Vector4( 1, 0.5, 0.5, 0 ) )
 
     }
 
-        var bones = []
-        var prevBone = new THREE.Bone()
-        bones.push( prevBone )
-        prevBone.position.y = - numCurves/2
-
-        for ( var i = 0; i < numCurves; i ++ ) {
-
-          var bone = new THREE.Bone()
-          bone.position.y = numCurves
-          bones.push( bone )
-          prevBone.add( bone )
-          prevBone = bone
-
-        }
-
-
-        // var material = new THREE.MeshPhongMaterial( {
-        //           skinning : true,
-        //           color: 0x156289,
-        //           emissive: 0x072534,
-        //           side: THREE.DoubleSide
-        //         } )
+    var bones = []
+    for(var i = 0; i<numCurves+1; i++){
+      var bone = new THREE.Bone()
+      bone.position.y = i-numCurves/2
+      bones.push(bone)
+      if(i>0){
+        bones[i-1].add(bone)
+      }
+    }
 
         // this.mesh = new THREE.SkinnedMesh( this.geometry,	material )
         this.skeleton = new THREE.Skeleton( bones )
 
+        this.mesh.material.skinning = true
+
         this.mesh.add( bones[ 0 ] )
 
-        // this.mesh.bind( this.skeleton );
+        this.mesh.bind( this.skeleton );
 
         // this.skeletonHelper = new THREE.SkeletonHelper( this.mesh );
         // this.skeletonHelper.material.linewidth = 2;
+
+
+        // this.mesh.geometry.verticesNeedUpdate = true
 
         // bones[0].position.copy(branchCurve.curves[0].v1)
         // for(i = 1; i < numCurves; i++){
@@ -73,8 +63,6 @@ class Branch {
         //   displacement.sub(branchCurve.curves[i-1].v1)
         //   bones[i].position.copy(displacement)
         // }
-
-
   }
 }
 

@@ -81,13 +81,14 @@ class Environment {
     this.trees = []
 
     var lineCurve = new THREE.LineCurve(new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,1))
-    var branch = new Branch([lineCurve],1)
-    this.scene.add(branch.mesh)
-    console.log(branch.mesh)
+    this.branch = new Branch([lineCurve],1)
+    console.log(this.branch.skeleton)
+    this.scene.add(this.branch.mesh)
 
   }
 
   render () {
+    this.branch.mesh.skeleton.bones[1].rotation.x += 0.01
 
     this.renderer.render(this.scene, this.camera)
     this.camera.getWorldDirection(this.cameraDirection)
