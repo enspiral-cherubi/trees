@@ -9,11 +9,17 @@ class Branch {
     this.geometry = new THREE.CylinderGeometry(
       0.2/(level+1),                       // radiusTop
       0.2/level,                       // radiusBottom
-      numCurves+1,           // height
+      numCurves,           // height
       8,                       // radiusbranchCurve
       numCurves, // heightbranchCurve
       true                     // openEnded
     )
+
+
+    var material = new THREE.MeshNormalMaterial({skinning:true, side:THREE.DoubleSide})
+
+    this.mesh = new THREE.Mesh(this.geometry,material)
+
 
     for ( var i = 0; i < this.geometry.vertices.length; i ++ ) {
 
@@ -44,20 +50,19 @@ class Branch {
         }
 
 
-        var material = new THREE.MeshPhongMaterial( {
-                  skinning : true,
-                  color: 0x156289,
-                  emissive: 0x072534,
-                  side: THREE.DoubleSide
-                } )
+        // var material = new THREE.MeshPhongMaterial( {
+        //           skinning : true,
+        //           color: 0x156289,
+        //           emissive: 0x072534,
+        //           side: THREE.DoubleSide
+        //         } )
 
-        // this.mesh = new THREE.SkinnedMesh( geometry,	material )
-        this.mesh = new THREE.Mesh(this.geometry,THREE.MeshNormalMaterial)
+        // this.mesh = new THREE.SkinnedMesh( this.geometry,	material )
         this.skeleton = new THREE.Skeleton( bones )
 
         this.mesh.add( bones[ 0 ] )
 
-        this.mesh.bind( this.skeleton );
+        // this.mesh.bind( this.skeleton );
 
         // this.skeletonHelper = new THREE.SkeletonHelper( this.mesh );
         // this.skeletonHelper.material.linewidth = 2;

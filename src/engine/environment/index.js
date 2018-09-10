@@ -7,8 +7,9 @@ var FlyControls = ThreeFlyControls(THREE)
 import WindowResize from 'three-window-resize'
 import LSystem from './l-system.js'
 import Leaf from './leaf.js'
+import Branch from './branch.js'
 var Color = require("color")
-var squirrel = true
+var squirrel = false
 
 
 class Environment {
@@ -65,19 +66,24 @@ class Environment {
     //   fragmentShader: $( '#planetFragmentShader' )[0].textContent
     // })
     var planet = new THREE.Mesh( planetGeometry, planetMaterial )
-    this.scene.add( planet )
+    // this.scene.add( planet )
 
     var planetEdgesGeometry = new THREE.EdgesGeometry( planetGeometry )
     var edgeMaterial = new THREE.LineBasicMaterial( {linewidth: 10 } )
     var planetEdges = new THREE.LineSegments( planetEdgesGeometry, edgeMaterial )
     this.scene.add(planetEdges)
 
-
     this.camera.position.z = 30
     this.camera.position.y = this.planetRadius
 
     //recursion depth, number of trees
-    this.trees = this.drawForest(4,5)
+    // this.trees = this.drawForest(5,1)
+    this.trees = []
+
+    var lineCurve = new THREE.LineCurve(new THREE.Vector3(0,0,0),new THREE.Vector3(0,0,1))
+    var branch = new Branch([lineCurve],1)
+    this.scene.add(branch.mesh)
+    console.log(branch.mesh)
 
   }
 
