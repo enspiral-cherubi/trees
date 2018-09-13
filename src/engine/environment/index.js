@@ -79,20 +79,41 @@ class Environment {
     //recursion depth, number of trees
     // this.trees = this.drawForest(5,1)
     this.trees = []
+    this.tentacles = []
+    for(var i = 0; i<10; i++){
+        var points = []
+        var lastPoint = new THREE.Vector3(0,0,0)
+        points.push(new THREE.Vector3(0,0,0))
+        for(var j = 0; j<10; j++){
+          var newPoint = new THREE.Vector3(0,0,0)
+          newPoint.copy(lastPoint)
+          newPoint.add(new THREE.Vector3(3*Math.random(),3*Math.random(),3*Math.random()))
+          lastPoint.copy(newPoint)
+          points.push(newPoint)
+        }
+        var newTentacle = new Branch(points,1)
+        var axis = new THREE.Vector3((1/2-Math.random()),(1/2-Math.random()),(1/2-Math.random()))
+        axis.multiplyScalar(Math.pow(axis.length(),-1))
+        newTentacle.geometry.lookAt(axis)
+        newTentacle.skeleton.bones[0].translateOnAxis(axis,this.planetRadius)
 
-    var points = []
-    points.push(new THREE.Vector3(0,0,0))
-    points.push(new THREE.Vector3(0,0,1))
-    points.push(new THREE.Vector3(0,3,2))
-    points.push(new THREE.Vector3(6,5,4))
-    this.branch = new Branch(points,1)
-    console.log(this.branch.skeleton)
-    this.scene.add(this.branch.mesh)
+        this.scene.add(newTentacle.mesh)
+        this.tentacles.push(newTentacle)
+    }
+
+
 
   }
 
   render () {
-    this.branch.mesh.skeleton.bones[2].rotation.x += 0.01
+    // this.branch.mesh.skeleton.bones[2].rotation.y += (Math.random()-0.5)*0.03
+    this.tentacles.forEach((tentacle) => {
+      tentacle.mesh.skeleton.bones.forEach((bone) => {
+        bone.rotation.x += 0.01*(1/2-Math.random())
+        bone.rotation.y += 0.01*(1/2-Math.random())
+        bone.rotation.z += 0.01*(1/2-Math.random())
+      })
+    })
 
     this.renderer.render(this.scene, this.camera)
     this.camera.getWorldDirection(this.cameraDirection)

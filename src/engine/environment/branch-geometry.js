@@ -23,7 +23,7 @@ class BranchGeometry extends THREE.TubeGeometry {
         offset.sub(center)
         this.vertices[index].addScaledVector(offset,scale)
         // this.vertices[index].copy(center)
-        console.log(scale)
+        // console.log(scale)
       }
     }
 

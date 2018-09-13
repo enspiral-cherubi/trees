@@ -1,20 +1,20 @@
 import THREE from 'three'
 import Leaf from './leaf.js'
 import BranchGeometry from './branch-geometry.js'
-var smoothness = 3
+var smoothness = 1
 
 class Branch {
   constructor(points, level){
 
     var numPoints = points.length
-
+    console.log(numPoints)
     this.curve = new THREE.CatmullRomCurve3(points)
-
+    console.log(this.curve)
     this.geometry = new BranchGeometry(
       this.curve,
-      smoothness*numPoints,
+      smoothness*numPoints-smoothness,
       1,
-      0.1,
+      0,
       8,
       false
     )
@@ -26,11 +26,11 @@ class Branch {
 
       var vertex = this.geometry.vertices[ i ]
 
-      var skinIndex = Math.floor(i/(8*smoothness))
+      var skinIndex = Math.floor(i/8)
       // var skinWeight = ( y % numCurves ) / numCurves
 
-      this.geometry.skinIndices.push( new THREE.Vector4( skinIndex, skinIndex + 1, skinIndex - 1, skinIndex + 2 ) )
-      this.geometry.skinWeights.push( new THREE.Vector4( 0.6, 0.4, 0.4, 0.2 ) )
+      this.geometry.skinIndices.push( new THREE.Vector4( skinIndex, skinIndex + 1, skinIndex +2 , skinIndex + 3 ) )
+      this.geometry.skinWeights.push( new THREE.Vector4( 0.6, 0, 0, 0 ) )
 
     }
 
