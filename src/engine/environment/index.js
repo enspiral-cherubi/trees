@@ -7,8 +7,9 @@ var FlyControls = ThreeFlyControls(THREE)
 import WindowResize from 'three-window-resize'
 import LSystem from './l-system.js'
 import Leaf from './leaf.js'
+import StretchyTube from './stretchy-tube.js'
 var Color = require("color")
-var squirrel = true
+var squirrel = false
 
 
 class Environment {
@@ -51,7 +52,7 @@ class Environment {
 
     this.planetRadius = 10
     var planetGeometry = new THREE.SphereGeometry(this.planetRadius,10,10)
-    var planetMaterial = new THREE.MeshBasicMaterial({color:0})
+    var planetMaterial = new THREE.MeshBasicMaterial({color:0,wireframe:true})
     // var planetMaterial = new THREE.ShaderMaterial({
     //   uniforms: {
     //     scale: { type: "f", value: 16},
@@ -76,12 +77,24 @@ class Environment {
     this.camera.position.z = 30
     this.camera.position.y = this.planetRadius
 
+    this.growing = true
+
     //recursion depth, number of trees
-    this.trees = this.drawForest(4,5)
+    // this.trees = this.drawForest(4,5)
+
+    this.endPoint = new THREE.Vector3(0,0,10)
+    var origin = new THREE.Vector3(0,0,0)
+    this.lineCurve = new THREE.LineCurve(origin,this.endPoint)
+    this.testGeometry = new StretchyTube(this.lineCurve,1,0.5,8,false)
+    var material = new THREE.MeshBasicMaterial({side:THREE.DoubleSide})
+    var tubeMesh = new THREE.Mesh(this.testGeometry,material)
+    this.scene.add(tubeMesh)
 
   }
 
   render () {
+    this.testGeometry.stretch(0.01)
+
 
     this.renderer.render(this.scene, this.camera)
     this.camera.getWorldDirection(this.cameraDirection)
@@ -164,10 +177,27 @@ class Environment {
     } else {
       this.flying = false
     }
+    if(e.key==='g' && this.growing){
+      this.grow
+    }
   }
 
   drawForest(n,N) {
     var trees = []
+
+    var woodMaterial = new THREE.ShaderMaterial({
+      uniforms: {
+        scale: { type: "f", value: 16},
+        frequency: { type: "f", value: 7},
+        noiseScale: { type: "f", value: 6},
+        ringScale: { type: "f", value: 0.4},
+        color1: { type: "c", value: new THREE.Color(0xffffff) },
+        color2: { type: "c", value: new THREE.Color(0x000000) }
+      },
+      vertexShader: $( '#vertexShader' )[0].textContent,
+      fragmentShader: $( '#fragmentShader' )[0].textContent
+    })
+
     for(var i = 0;i<N;i++){
       var newTree = this.drawTree(n,0.1)
       var xRot = Math.random()*2*Math.PI
@@ -179,18 +209,7 @@ class Environment {
       newTree.skeletonGeometry.rotateZ(zRot)
       // var skeletonMaterial = new THREE.MeshBasicMaterial({vertexColors:THREE.VertexColors})
 
-      var woodMaterial = new THREE.ShaderMaterial({
-      	uniforms: {
-          scale: { type: "f", value: 16},
-          frequency: { type: "f", value: 7},
-          noiseScale: { type: "f", value: 6},
-          ringScale: { type: "f", value: 0.4},
-          color1: { type: "c", value: new THREE.Color(0xffffff) },
-          color2: { type: "c", value: new THREE.Color(0x000000) }
-      	},
-      	vertexShader: $( '#vertexShader' )[0].textContent,
-      	fragmentShader: $( '#fragmentShader' )[0].textContent
-      })
+
 
       // var skeletonMaterial = new THREE.MeshBasicMaterial({color:0x91744b, side:THREE.DoubleSide})
       var skeletonMaterial = woodMaterial

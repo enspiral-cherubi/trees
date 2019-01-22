@@ -93,6 +93,7 @@ class LSystem {
   }
 
   generateGeometry(angle,wobble) {
+    var i = 0
     var position = new THREE.Vector3(0,0,0)
     var direction = new THREE.Vector3(0,0.1,0)
     var velocity = 0.5*this.scale
@@ -102,6 +103,7 @@ class LSystem {
     var savedPositions = []
     var savedDirections = []
     var level = 1
+    var maxLevel = 1
     var skeletonPieces = []
     var skeletonGeometry = new THREE.Geometry()
 
@@ -128,6 +130,7 @@ class LSystem {
       else if (symbol === 'L'){
         if (Math.random()>2/level){
           var leaf = new Leaf(position,direction,this.prototypeLeafGeometry)
+          leaf.level = level
           this.leaves.push(leaf.geometry)
         }
       }
@@ -142,6 +145,9 @@ class LSystem {
       else if (symbol === '['){
         //save position and angle
         level+=1
+        if(level > maxLevel){
+          maxLevel+=1
+        }
         var savedPosition = new THREE.Vector3()
         savedPosition.copy(position)
         savedPositions.push(savedPosition)
@@ -159,11 +165,17 @@ class LSystem {
         axis.applyAxisAngle(axis3,wobble)
       }
     }
+    console.log(maxLevel + ' levels')
 
     //now build by level
+    var geometryByLevel = []
+    for(i = 0; i<maxLevel; i++){
+      geometryByLevel.push(new THREE.Geometry())
+    }
+
     var length = 0
     i = 0
-    console.log(skeletonPieces.length)
+    console.log(skeletonPieces.length + ' instructions')
     while(i < skeletonPieces.length){
         length = 0
         var branchPath = new THREE.CurvePath()
@@ -183,20 +195,35 @@ class LSystem {
           false //closed
         ))
 
+        geometryByLevel[level-1].merge(new THREE.TubeGeometry(branchPath,
+          length, //segments
+          this.scale*0.2/level, //radius
+          12, //radius segments
+          false //closed
+        ))
+
     }
 
+    this.geometryByLevel = geometryByLevel
+
+    var leavesByLevel = []
+    var numLeaves = this.leaves.length
+    console.log(numLeaves + ' leaves')
+    // for(i = 0; i < this.leaves.length; i++){
+    //
+    // }
 
     //add color
-    var numFaces = skeletonGeometry.faces.length
-    for (var i = 0; i < numFaces; i++){
-      // var hue = parseInt(i/numFaces)
-      var hue = i/numFaces
-      var saturation = 1
-      var color = new THREE.Color()
-      color.setHSL(hue,saturation,0.5)
-      skeletonGeometry.faces[i].color = color
-    }
-    skeletonGeometry.colorsNeedUpdate = true
+    // var numFaces = skeletonGeometry.faces.length
+    // for (i = 0; i < numFaces; i++){
+    //   // var hue = parseInt(i/numFaces)
+    //   var hue = i/numFaces
+    //   var saturation = 1
+    //   var color = new THREE.Color()
+    //   color.setHSL(hue,saturation,0.5)
+    //   skeletonGeometry.faces[i].color = color
+    // }
+    // skeletonGeometry.colorsNeedUpdate = true
     this.skeletonGeometry = skeletonGeometry
     // this.leafGeometry = leafGeometry
   }
