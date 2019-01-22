@@ -85,7 +85,11 @@ class Environment {
     this.endPoint = new THREE.Vector3(0,0,10)
     var origin = new THREE.Vector3(0,0,0)
     this.lineCurve = new THREE.LineCurve(origin,this.endPoint)
-    this.testGeometry = new StretchyTube(this.lineCurve,3,1,0.1,7,false)
+    var lineCurve2 = new THREE.LineCurve(this.endPoint, new THREE.Vector3(3,0,13))
+    var curvePath = new THREE.CurvePath()
+    curvePath.curves.push(this.lineCurve)
+    curvePath.curves.push(lineCurve2)
+    this.testGeometry = new StretchyTube(curvePath,3,1,0.1,7,false)
     var material = new THREE.MeshBasicMaterial({side:THREE.DoubleSide})
     var tubeMesh = new THREE.Mesh(this.testGeometry,material)
     this.scene.add(tubeMesh)
@@ -93,7 +97,7 @@ class Environment {
   }
 
   render () {
-    this.testGeometry.stretch(0.01)
+    this.testGeometry.stretch(0.001)
 
 
     this.renderer.render(this.scene, this.camera)
