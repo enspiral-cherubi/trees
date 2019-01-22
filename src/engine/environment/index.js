@@ -85,7 +85,7 @@ class Environment {
     this.endPoint = new THREE.Vector3(0,0,10)
     var origin = new THREE.Vector3(0,0,0)
     this.lineCurve = new THREE.LineCurve(origin,this.endPoint)
-    this.testGeometry = new StretchyTube(this.lineCurve,1,0.5,8,false)
+    this.testGeometry = new StretchyTube(this.lineCurve,3,1,0.1,7,false)
     var material = new THREE.MeshBasicMaterial({side:THREE.DoubleSide})
     var tubeMesh = new THREE.Mesh(this.testGeometry,material)
     this.scene.add(tubeMesh)
