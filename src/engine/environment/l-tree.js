@@ -1,17 +1,12 @@
 import THREE from 'three'
 import Leaf from './leaf.js'
+import LSystem from './l-system.js'
 
 
-class LSystem {
+class LTree {
   constructor (n,rule,angle,wobble,scale) {
-    if (rule === 'random') {
-      this.rule = this.generateRule()
-    } else {
-      this.rule = rule
-    }
-    this.scale = scale || 2
-    this.string = this.generateString(n,this.rule)
-    this.tree = this.generateTree(this.string)
+    this.lsystem = new LSystem(n,rule,angle,wobble,scale)
+    this.tree = this.generateTree(this.lsystem.string)
     this.leaves = []
     this.generateLeafGeometry()
     this.generateGeometry(angle,wobble)
@@ -91,60 +86,6 @@ class LSystem {
     return levels
   }
 
-  generateRule () {
-    var rule = 'FFF[X'
-    var numLeftBrackets = 1
-    var numX = 2
-    var numSymbols = 0
-    while(true){
-      var r = Math.random()
-      if (r<0.2){
-        rule += '[F'
-        numLeftBrackets += 1
-        numX +=1
-      } else if (r<0.3 && numX<5) {
-        rule += 'X'
-        numX += 1
-      } else if (r<0.50) {
-        rule += 'F'
-      } else if (r<0.65) {
-        rule += '+F'
-      } else if (r<0.8) {
-        rule += '-F'
-      } else if (numLeftBrackets>0) {
-        rule += 'XL]'
-        if(r<0.9){
-          rule += '+'
-        } else {
-          rule += '-'
-        }
-        numLeftBrackets -= 1
-        if (numSymbols>20){
-          break
-        }
-      }
-      numSymbols +=1
-    }
-    while(numLeftBrackets > 0){
-      rule += '+FL]'
-      numLeftBrackets -= 1
-    }
-    console.log(rule)
-    return rule
-  }
-
-  generateString (n,rule) {
-    var string = 'X'
-    for (var i = 0; i < n; i++){
-      //these rules encode the grammar
-      // string = string.replace(/X/g,'F-[[X]+X]+F[+FX]-X)')
-      // string = string.replace(/X/g,'F-[[X]+X]+F[+F[F+X-[X+]]]-X)') //nice with 3d hack
-      string = string.replace(/X/g,rule) //nice with 3d hack
-      string = string.replace(/F/g,'FF') //whoa
-    }
-    string.replace(/X/g,'') //don't factor into final draw instructions
-    return string
-  }
 
 
   generateLeafGeometry() {
@@ -181,15 +122,15 @@ class LSystem {
     var skeletonGeometry = new THREE.Geometry()
 
     var symbol = ''
-    for (i = 0; i < this.string.length; i++){
-      symbol = this.string.charAt(i)
+    for (i = 0; i < this.lsystem.string.length; i++){
+      symbol = this.lsystem.string.charAt(i)
       if (symbol === 'F'){
         var numFs = 1
-        symbol = this.string.charAt(i+1)
+        symbol = this.lsystem.string.charAt(i+1)
         while (symbol === 'F'){
           numFs++
           i++
-          symbol = this.string.charAt(i+1)
+          symbol = this.lsystem.string.charAt(i+1)
         }
         //draw forward
         var newPosition = new THREE.Vector3()
@@ -278,4 +219,4 @@ class LSystem {
 
 }
 
-export default LSystem
+export default LTree
