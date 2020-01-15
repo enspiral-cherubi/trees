@@ -11,9 +11,84 @@ class LSystem {
     }
     this.scale = scale || 2
     this.string = this.generateString(n,this.rule)
+    this.tree = this.generateTree(this.string)
     this.leaves = []
     this.generateLeafGeometry()
     this.generateGeometry(angle,wobble)
+  }
+
+  generateTree(string) {
+    //geometric constants
+    var angle = Math.PI/5
+    var wobble = Math.PI/5
+    var resolution = 32
+    var r = Math.random()*0.4 + 0.1
+    var a = Math.random()
+    var b = 0.5+Math.random()/2
+    var n = Math.floor(Math.random()*10)
+    var position = new THREE.Vector3(0,0,0)
+    var direction = new THREE.Vector3(0,0.1,0)
+    var velocity = 0.5*this.scale
+    var axis = new THREE.Vector3(0,0,1)
+    var axis2 = new THREE.Vector3(0,1,0)
+    var axis3 = new THREE.Vector3(1,0,0)
+
+    var numFs = 0
+    var startDirection = direction.clone()
+    var startPosition = position.clone()
+    var levels = []
+    var level = 0
+    var stringBit = ''
+    for(var i = 0; i < string.length; i++){
+      var symbol = string.charAt(i)
+        if(symbol === '['){
+          if(levels.length === level){
+            levels.push([])
+          }
+          if (numFs > 0){
+            levels[level].push({string:stringBit, startPosition:startPosition.clone(), startDirection:startDirection.clone()})
+          }
+          stringBit = ''
+          startPosition.copy(position)
+          startDirection.copy(direction)
+          level += 1
+          numFs = 0
+        } else if (symbol === ']'){
+          if(levels.length === level){
+            levels.push([])
+          }
+          if (numFs > 0){
+            levels[level].push({string:stringBit, startPosition:startPosition.clone(), startDirection:startDirection.clone()})
+          }
+          stringBit = ''
+          startPosition.copy(position)
+          startDirection.copy(direction)
+          level -= 1
+          numFs = 0
+        } else if (symbol === '+'){
+          direction.applyAxisAngle(axis,angle)
+          stringBit += symbol
+        } else if (symbol === '-'){
+          direction.applyAxisAngle(axis,angle)
+          stringBit += symbol
+        } else if (symbol === 'F') {
+          position.addScaledVector(direction,velocity)
+          stringBit += symbol
+          numFs += 1
+        } else if (symbol === 'L') {
+          stringBit += symbol
+        }
+    }
+    if (numFs > 0){
+      levels[level].push({string:stringBit, startPosition:startPosition.clone(), startDirection:startDirection.clone()})
+    }
+    stringBit = ''
+    startPosition.copy(position)
+    startDirection.copy(direction)
+    level -= 1
+    numFs = 0
+    console.log(levels)
+    return levels
   }
 
   generateRule () {

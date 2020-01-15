@@ -196,7 +196,20 @@ class Environment {
       var skeletonMaterial = woodMaterial
       var skeletonMesh = new THREE.Mesh(newTree.skeletonGeometry,skeletonMaterial)
       this.scene.add(skeletonMesh)
-      var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
+
+
+      // var leafMaterial = new THREE.MeshNormalMaterial({side:THREE.DoubleSide})
+      let uniforms = {
+        redScale: {type: 'float', value: 0.3},
+        greenScale: {type: 'float', value: 0.8},
+        blueScale: {type: 'float', value: 0.1}
+      }
+      var leafMaterial = new THREE.ShaderMaterial({
+        uniforms: uniforms,
+        fragmentShader: leafFragShader(),
+        vertexShader: leafVertShader()
+      })
+
       newTree.leaves.forEach((leaf) => {
         leaf.translate(0,this.planetRadius,0)
         leaf.rotateX(xRot)
@@ -224,6 +237,40 @@ class Environment {
   }
 
 
+
+}
+function leafVertShader() {
+  return `
+    uniform float redScale;
+    uniform float blueScale;
+    uniform float greenScale;
+    varying vec3 vNormal;
+
+    void main() {
+      vNormal = normalMatrix * normalize(normal);;
+
+      vec4 modelViewPosition = modelViewMatrix * vec4(position, 1.0);
+      gl_Position = projectionMatrix * modelViewPosition;
+    }
+  `
+}
+
+function leafFragShader() {
+  return `
+      uniform float redScale;
+      uniform float blueScale;
+      uniform float greenScale;
+      varying vec3 vNormal;
+
+      void main() {
+        vec3 view_nv  = normalize(vNormal);
+        vec3 nv_color = view_nv * 0.5 + 0.5;
+        vec3 nv_color_scaled = vec3(nv_color.x*redScale, nv_color.y*greenScale, nv_color.z*blueScale);
+        gl_FragColor  = vec4(nv_color_scaled, 1.0);
+
+
+      }
+  `
 }
 
 export default Environment
