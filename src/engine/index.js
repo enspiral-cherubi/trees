@@ -12,7 +12,7 @@ class Engine {
   }
 
   bindEventListeners () {
-    $(window).load(this.view.closeLoadingScreen)
+    $(window).on('load', this.view.closeLoadingScreen )
     $(window).keydown((e)=>{
       this.environment.control(e)
       this.environment.mapKeys(e)
